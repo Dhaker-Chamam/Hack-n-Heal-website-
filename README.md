@@ -1,5 +1,7 @@
 # Hack'n'Heal 2026: participant site and back-office
 
+Official website for Hack'n'Heal — the health-tech hackathon bringing developers, designers, and innovators together to build solutions for a healthier future.
+
 The landing page (`/`, with four warm-up games), registration (solo or team, both competitions), personal space with QR code, team management, rules and privacy notice, and the organisers' back-office. French UI. Next.js 16 (App Router), Tailwind CSS 4, framer-motion on the landing page, Postgres (Supabase in production), Nodemailer over the club mailbox.
 
 The landing page was designed in `hnh/` (English, standalone) and ported to `app/page.tsx` and `components/landing/` in French. `hnh/` is kept as the design reference and is not part of the build.
