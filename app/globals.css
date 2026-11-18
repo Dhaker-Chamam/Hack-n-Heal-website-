@@ -1,26 +1,168 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/*
+ * Hack'n'Heal 2026 tokens, from the Visual Identity Guidelines v1.0, styled after the landing page
+ * (Abyss bands, extra-bold tight display type, square corners, Luminous actions on dark).
+ * Measured contrast (WCAG): Ink/Paper 16.1, Graphite/Paper 8.3, Graphite/Mist 7.5,
+ * Deep Jade/Paper 11.0, Emerald/Paper 5.0, White/Emerald 5.3, Mist/Abyss 13.2,
+ * Luminous/Abyss 6.7, Luminous/Deep Jade 5.1, Abyss/Luminous 6.7, Stone/Abyss 5.2, Danger/Paper 6.2,
+ * Mist at 80% on Abyss 8.8, Mist at 70% on Abyss 7.2.
+ * Stone fails on every light ground (2.8) and Luminous fails on light (2.2):
+ * both are reserved for dark grounds.
+ */
+@theme {
+  --color-paper: #f6f9f8;
+  --color-mist: #e6efec;
+  --color-white: #ffffff;
+  --color-ink: #0d1f1e;
+  --color-graphite: #3d4e4d;
+  --color-stone: #8a9896;
+  --color-jade: #0a3f42;
+  --color-emerald: #0b7a5e;
+  --color-luminous: #3fbf9c;
+  --color-abyss: #06292b;
+  --color-danger: #b42318;
+  --color-danger-dark: #f97066;
+
+  --font-sans: var(--font-jakarta), Inter, system-ui, sans-serif;
+
+  /* Square corners everywhere, as on the landing page */
+  --radius-ctl: 0px;
+
+  /* Reading measure: ~72 characters of Plus Jakarta Sans at 16px (its "ch" is wider than an average letter) */
+  --container-measure: 36rem;
+
+  --text-small: 0.875rem;
+  --text-small--line-height: 1.5;
+  --text-label: 0.8125rem;
+  --text-label--line-height: 1.4;
+
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-out-expo: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    background: var(--color-paper);
+    color: var(--color-ink);
+    -webkit-text-size-adjust: 100%;
+    scrollbar-color: var(--color-graphite) var(--color-mist);
+  }
+  body {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.6;
+    caret-color: var(--color-emerald);
+    text-rendering: optimizeLegibility;
+  }
+  ::selection {
+    background: var(--color-emerald);
+    color: var(--color-white);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-emerald);
+    outline-offset: 2px;
+  }
+  .on-dark :focus-visible,
+  .on-dark:focus-visible {
+    outline-color: var(--color-luminous);
+    outline-offset: 3px;
+  }
+  .on-dark ::selection {
+    background: var(--color-luminous);
+    color: var(--color-abyss);
+  }
+  a {
+    text-underline-offset: 0.2em;
+    text-decoration-thickness: 1px;
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+    color: var(--color-jade);
+  }
+  p,
+  li,
+  dd {
+    text-wrap: pretty;
+  }
+  table,
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+  input,
+  select,
+  textarea,
+  button {
+    font: inherit;
+  }
+  input[type="checkbox"],
+  input[type="radio"] {
+    accent-color: var(--color-emerald);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Type hierarchy, after the landing page: extra-bold display, tight leading, negative tracking */
+@utility t-display {
+  font-size: clamp(2.5rem, 7vw, 5rem);
+  line-height: 0.98;
+  letter-spacing: -0.025em;
+  font-weight: 800;
+}
+@utility t-headline {
+  font-size: clamp(2rem, 4.6vw, 3.5rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+}
+@utility t-subhead {
+  font-size: 1.375rem;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  font-weight: 700;
+}
+@utility t-label {
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+/* Form controls: White field, Graphite 1px border (8.3:1), square corners */
+@utility control {
+  display: block;
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.6875rem 0.875rem;
+  background: var(--color-white);
+  color: var(--color-ink);
+  border: 1px solid var(--color-graphite);
+  border-radius: var(--radius-ctl);
+  transition: border-color 150ms var(--ease-out-quart);
+  &::placeholder {
+    color: var(--color-graphite);
+    opacity: 0.85;
+  }
+  &:hover {
+    border-color: var(--color-jade);
+  }
+  &[aria-invalid="true"] {
+    border-color: var(--color-danger);
+  }
+  &:disabled {
+    background: var(--color-mist);
+    cursor: not-allowed;
+  }
 }
