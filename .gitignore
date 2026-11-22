@@ -48,3 +48,5 @@ next-env.d.ts
 
 # sponsorship dossier: contains personal phone numbers, emails and prices (repo is public)
 HacknHeal_2026_Dossier_Sponsoring.pdf
+
+.vercel
