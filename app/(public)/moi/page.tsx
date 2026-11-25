@@ -16,7 +16,7 @@ import { qrPayload, qrSvg } from "@/lib/qr";
 import { currentPerson } from "@/lib/session";
 import { formatMissing } from "@/lib/teams";
 import { formatDeadline, formatShort } from "@/lib/time";
-import { getWindows, type TimeWindow } from "@/lib/windows";
+import { getWindows, isPaused, type TimeWindow } from "@/lib/windows";
 import { requestLink } from "../lien/actions";
 import { deleteMyData, removeCv, replaceCv, signOut, updatePreferences, updateProfile } from "./actions";
 
@@ -248,7 +248,9 @@ function CompetitionRow({
             </Link>
           </>
         ) : (
-          <p className="mt-1 text-small text-graphite">Tu n&apos;y participes pas. Les inscriptions sont closes.</p>
+          <p className="mt-1 text-small text-graphite">
+            Tu n&apos;y participes pas. Les inscriptions sont {isPaused(reg) ? "fermées pour le moment" : "closes"}.
+          </p>
         )}
       </div>
     );
@@ -263,7 +265,9 @@ function CompetitionRow({
           {info.label} <span className="ml-2 font-normal text-graphite">{info.rhythm}</span>
         </p>
         {t?.locked_at || !teamWindow.is_open ? (
-          <span className="text-small font-semibold text-jade">Équipe verrouillée</span>
+          <span className="text-small font-semibold text-jade">
+            {!t?.locked_at && isPaused(teamWindow) ? "Équipes fermées pour le moment" : "Équipe verrouillée"}
+          </span>
         ) : teamWindow.closes_at ? (
           <span className="text-small text-graphite">Équipes modifiables jusqu&apos;au {formatDeadline(teamWindow.closes_at)}</span>
         ) : null}

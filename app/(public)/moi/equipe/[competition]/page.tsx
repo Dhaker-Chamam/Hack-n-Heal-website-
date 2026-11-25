@@ -14,7 +14,7 @@ import { myParticipations } from "@/lib/participant";
 import { currentPerson } from "@/lib/session";
 import { formatMissing } from "@/lib/teams";
 import { formatDeadline } from "@/lib/time";
-import { getWindows } from "@/lib/windows";
+import { getWindows, isPaused } from "@/lib/windows";
 import { changeTeam, joinCompetition, leaveMyTeam, manageMember, renameTeam, withdrawCompetition } from "../actions";
 
 export const metadata: Metadata = { title: "Mon équipe" };
@@ -50,7 +50,7 @@ export default async function TeamPage({ params }: { params: Promise<{ competiti
             {reg.is_open ? (
               <TeamChoiceForm competition={c} action={joinCompetition.bind(null, c)} withCompetitionFields submitLabel="Confirmer ma participation" />
             ) : (
-              <Alert tone="info" title="Les inscriptions à cette compétition sont closes." />
+              <Alert tone="info" title={isPaused(reg) ? "Les inscriptions à cette compétition sont fermées pour le moment." : "Les inscriptions à cette compétition sont closes."} />
             )}
           </div>
         </>
@@ -66,7 +66,7 @@ export default async function TeamPage({ params }: { params: Promise<{ competiti
             {editable ? (
               <TeamChoiceForm competition={c} action={changeTeam.bind(null, c)} allowSeek={!part.seeking_team} submitLabel="Valider" />
             ) : (
-              <Alert tone="info" title="Les équipes sont verrouillées.">
+              <Alert tone="info" title={isPaused(teamWindow) ? "Les équipes de cette compétition sont fermées pour le moment." : "Les équipes sont verrouillées."}>
                 Les organisateurs placent les participants sans équipe. Tu recevras un email.
               </Alert>
             )}
@@ -128,7 +128,7 @@ export default async function TeamPage({ params }: { params: Promise<{ competiti
             {team.locked_at ? (
               <Alert tone="info" title="Équipe verrouillée par les organisateurs." />
             ) : !teamWindow.is_open ? (
-              <Alert tone="info" title="Les équipes sont verrouillées.">
+              <Alert tone="info" title={isPaused(teamWindow) ? "Les équipes de cette compétition sont fermées pour le moment." : "Les équipes sont verrouillées."}>
                 Pour tout changement, écris aux organisateurs.
               </Alert>
             ) : teamWindow.closes_at ? (

@@ -8,7 +8,7 @@ import { INSTITUTIONS, SKILLS, SPECIALITIES, STUDY_LEVELS } from "@/lib/constant
 import { cvUploadEnabled } from "@/lib/env";
 import { currentPerson } from "@/lib/session";
 import { formatDeadline } from "@/lib/time";
-import { getWindows } from "@/lib/windows";
+import { getWindows, isPaused } from "@/lib/windows";
 import { register } from "./actions";
 
 export const metadata: Metadata = { title: "Inscription" };
@@ -44,6 +44,7 @@ export default async function InscriptionPage() {
           <RegistrationForm
             action={register}
             open={{ medical: w.reg_medical.is_open, bioinfo: w.reg_bioinfo.is_open }}
+            paused={{ medical: isPaused(w.reg_medical), bioinfo: isPaused(w.reg_bioinfo) }}
             deadlines={{ medical: deadline(w.reg_medical.closes_at), bioinfo: deadline(w.reg_bioinfo.closes_at) }}
             cvEnabled={cvUploadEnabled()}
             institutions={INSTITUTIONS}
@@ -60,10 +61,10 @@ export default async function InscriptionPage() {
           <div className="mt-4">
             <Facts
               items={[
-                ["Inscriptions, médical", deadline(w.reg_medical.closes_at)],
+                ["Inscriptions, médical", isPaused(w.reg_medical) ? "fermées pour le moment" : deadline(w.reg_medical.closes_at)],
                 ["Équipes médicales verrouillées", deadline(w.teams_medical.closes_at)],
                 ["Défi médical publié", "samedi 28 novembre à 10:00"],
-                ["Inscriptions, bioinformatique", deadline(w.reg_bioinfo.closes_at)],
+                ["Inscriptions, bioinformatique", isPaused(w.reg_bioinfo) ? "fermées pour le moment" : deadline(w.reg_bioinfo.closes_at)],
                 ["Événement à l'INSAT", "samedi 5 et dimanche 6 décembre"],
               ]}
             />

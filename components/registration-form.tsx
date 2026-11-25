@@ -15,6 +15,8 @@ type Comp = "medical" | "bioinfo";
 export type RegistrationFormProps = {
   action: (prev: RegisterState, form: FormData) => Promise<RegisterState>;
   open: Record<Comp, boolean>;
+  /** closed by the organisers before the deadline, possibly to reopen */
+  paused: Record<Comp, boolean>;
   deadlines: Record<Comp, string>;
   cvEnabled: boolean;
   institutions: readonly string[];
@@ -56,7 +58,7 @@ function stepOf(field: string): number {
 }
 
 export function RegistrationForm(props: RegistrationFormProps) {
-  const { open, deadlines, cvEnabled } = props;
+  const { open, paused, deadlines, cvEnabled } = props;
   const [state, formAction, pending] = useActionState(props.action, { ok: false, errors: {} });
   const [step, setStep] = useState(0);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -279,11 +281,16 @@ export function RegistrationForm(props: RegistrationFormProps) {
         <div className="mb-4 empty:hidden">
           <FieldError id="competitions-error" message={err("competitions")} />
         </div>
-        {!anyOpen && (
-          <Alert tone="info" title="Les inscriptions sont closes.">
-            Les deux compétitions ont fermé leurs inscriptions. Rendez-vous à l&apos;INSAT les 5 et 6 décembre.
-          </Alert>
-        )}
+        {!anyOpen &&
+          (paused.medical || paused.bioinfo ? (
+            <Alert tone="info" title="Les inscriptions sont fermées pour le moment.">
+              Reviens sur cette page ou suis les annonces des organisateurs.
+            </Alert>
+          ) : (
+            <Alert tone="info" title="Les inscriptions sont closes.">
+              Les deux compétitions ont fermé leurs inscriptions. Rendez-vous à l&apos;INSAT les 5 et 6 décembre.
+            </Alert>
+          ))}
         <div className="grid gap-4 md:grid-cols-2">
           {(["medical", "bioinfo"] as Comp[]).map((c) => {
             const copy = COMP_COPY[c];
@@ -338,7 +345,7 @@ export function RegistrationForm(props: RegistrationFormProps) {
                     closed ? "text-ink" : "text-jade peer-checked:text-white"
                   }`}
                 >
-                  {closed ? "Inscriptions closes" : `Inscriptions jusqu'au ${deadlines[c]}`}
+                  {closed ? (paused[c] ? "Inscriptions fermées pour le moment" : "Inscriptions closes") : `Inscriptions jusqu'au ${deadlines[c]}`}
                 </span>
               </label>
             );

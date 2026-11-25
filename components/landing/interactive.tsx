@@ -218,8 +218,8 @@ const FAQS: [string, ReactNode][] = [
       <a href="/inscription" className={link}>
         page d&apos;inscription
       </a>
-      , en quelques minutes. Hackathon médical : jusqu&apos;au jeudi 26 novembre à 23:59. Hackathon bioinformatique : jusqu&apos;au
-      mercredi 2 décembre à 23:59.
+      , en quelques minutes. Hackathon médical : jusqu&apos;au jeudi 26 novembre à 23:59. Pour le hackathon bioinformatique, la page
+      d&apos;inscription indique si les inscriptions sont ouvertes.
     </>,
   ],
   [

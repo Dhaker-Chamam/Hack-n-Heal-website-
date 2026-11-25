@@ -55,3 +55,11 @@ export function hasClosed(w: TimeWindow): boolean {
 export function closedSince(w: TimeWindow): string {
   return w.closes_at && w.closes_at.getTime() <= Date.now() ? ` depuis le ${formatDeadline(w.closes_at)}` : "";
 }
+
+/**
+ * Closed by hand while its closing time is still ahead: a pause that an organiser can lift
+ * in /admin/calendrier, not the deadline. The pages then say "pour le moment".
+ */
+export function isPaused(w: TimeWindow): boolean {
+  return !w.is_open && w.manual_state === "closed" && (w.closes_at === null || w.closes_at.getTime() > Date.now());
+}
