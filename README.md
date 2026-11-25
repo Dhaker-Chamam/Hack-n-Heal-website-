@@ -40,7 +40,7 @@ Without `SMTP_HOST`, emails are not sent: they are stored in the outbox and prin
    Then `DATABASE_URL=postgres://hnh_app.<project-ref>:<password>@aws-1-eu-west-1.pooler.supabase.com:6543/postgres?sslmode=require`.
 2. **CV storage** (optional): create a private bucket `cvs` and set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`. Without them, the CV field is hidden.
 3. **Email**: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM` for the club mailbox (for Gmail: an app password, which needs 2-step verification).
-4. **Vercel**: set every variable from `.env.example`, plus `CRON_SECRET` for the daily maintenance job (`vercel.json`, region `dub1`, next to the database).
+4. **Vercel**: set every variable from `.env.example`, plus `CRON_SECRET` for the daily maintenance job (`vercel.json`, region `dub1`, next to the database). The project is connected to this GitHub repository: every push to `main` deploys to production. Run a new file from `supabase/migrations/` on Supabase before pushing the code that needs it. The variables exist for production only, so preview deployments of other branches build but have no database.
 
 ## Rules enforced by the server
 
