@@ -9,7 +9,7 @@ import { audit } from "@/lib/audit";
 import { requireStaff } from "@/lib/admin";
 import { COMPETITIONS, type Competition } from "@/lib/constants";
 import { db, UserError } from "@/lib/db";
-import { notifyLead } from "@/lib/participant";
+import { notifyLead, notifyPlaced } from "@/lib/participant";
 import { rateLimit } from "@/lib/ratelimit";
 import { insertTeam, leaveTeam, seatInTeam, teamMembers } from "@/lib/registration";
 
@@ -92,6 +92,7 @@ export async function createTeam(competition: string, _prev: FormState, form: Fo
     return toState(e);
   }
   await audit("staff", staff.id, "team.admin_create", "team", team.id, { competition: c, name, members, lead });
+  after(() => notifyPlaced(team.id, c, members));
   revalidatePath("/admin/equipes");
   return done(`Équipe « ${name} » créée avec le code ${team.code}.`);
 }
@@ -125,6 +126,7 @@ export async function addMembers(competition: string, _prev: FormState, form: Fo
   await audit("staff", staff.id, "team.admin_add_members", "team", teamId, { members });
   after(async () => {
     for (const p of result.people) await notifyLead(teamId, c, { id: p.person_id, first_name: p.first_name, last_name: p.last_name });
+    await notifyPlaced(teamId, c, members);
   });
   revalidatePath("/admin/equipes");
   const n = members.length;

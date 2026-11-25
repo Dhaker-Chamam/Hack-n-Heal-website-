@@ -118,7 +118,8 @@ export const SKILL_GROUPS = [
   { label: "Pitch", skills: ["Pitch"] },
 ] as const satisfies readonly { label: string; skills: readonly (typeof SKILLS)[number][] }[];
 
-export const CONSENT_VERSION = "2026-11-16";
+// The date shown on /confidentialite: change both together.
+export const CONSENT_VERSION = "2026-11-25";
 
 export const AGORA_CATEGORIES = {
   projet: "Projet",

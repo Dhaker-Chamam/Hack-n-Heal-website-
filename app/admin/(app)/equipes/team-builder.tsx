@@ -248,7 +248,7 @@ function FreePeople({
                   Équipe
                 </label>
                 <p id="team_target-hint" className="mt-0.5 text-small text-graphite">
-                  Les équipes verrouillées ou complètes ne sont pas proposées. Le chef d&apos;équipe reçoit un email.
+                  Les équipes verrouillées ou complètes ne sont pas proposées.
                 </p>
                 <select id="team_target" name="team" value={target?.id ?? ""} onChange={(e) => setTeamId(e.currentTarget.value)} aria-describedby="team_target-hint" className="control mt-2">
                   <option value="">Choisir…</option>
@@ -277,6 +277,12 @@ function FreePeople({
               <Button type="submit" disabled={pending || tooMany || (mode === "add" && !target)}>
                 {pending ? "Enregistrement…" : "Confirmer"}
               </Button>
+              <p className="mt-2 text-small text-graphite">
+                {mode === "add"
+                  ? "Les personnes ajoutées et le chef d'équipe reçoivent un email."
+                  : "Les personnes placées reçoivent un email."}{" "}
+                Seules les adresses confirmées sont prévenues.
+              </p>
             </div>
           </form>
         </section>

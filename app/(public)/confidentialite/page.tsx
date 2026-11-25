@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: "Données personnelles" };
 export default function PrivacyPage() {
   const contact = env.controllerContact ?? "symbioinsat@gmail.com";
   return (
-    <Prose title="Données personnelles" updated="16 novembre 2026">
+    <Prose title="Données personnelles" updated="25 novembre 2026">
       <Section id="responsable" title="Qui traite tes données">
         <p>
           Le responsable du traitement est <strong>{env.controllerName}</strong>, club étudiant de l&apos;INSAT, qui organise
@@ -28,8 +28,9 @@ export default function PrivacyPage() {
       <Section id="donnees" title="Ce que nous collectons, et pourquoi">
         <ul>
           <li>
-            <strong>Identité et contact</strong> (prénom, nom, email, téléphone) : gérer ton inscription, t&apos;envoyer ton lien
-            personnel et ton QR code, te joindre pendant l&apos;événement, imprimer ton badge et ton certificat.
+            <strong>Identité et contact</strong> (prénom, nom, email, téléphone, et ton profil Facebook si tu l&apos;indiques) :
+            gérer ton inscription, t&apos;envoyer ton lien personnel et ton QR code, te joindre pendant l&apos;événement, imprimer
+            ton badge et ton certificat.
           </li>
           <li>
             <strong>Parcours</strong> (établissement, niveau, profil, compétences, lien LinkedIn ou GitHub) : former des équipes

@@ -2,7 +2,7 @@ import "server-only";
 import type { Competition, ProfileKind } from "./constants";
 import { db } from "./db";
 import { sendMail } from "./email";
-import { teammateJoinedEmail } from "./emails";
+import { teamPlacedEmail, teammateJoinedEmail } from "./emails";
 import { teamMembers, type Member } from "./registration";
 import { formatMissing, teamBalance, type TeamBalance } from "./teams";
 
@@ -58,6 +58,32 @@ export async function notifyLead(
       formatMissing(team.balance.missing),
     ),
   });
+}
+
+/** Tells the confirmed people among these participations that the organisers seated them in the team. */
+export async function notifyPlaced(teamId: string, competition: Competition, participationIds: string[]) {
+  const team = await loadTeam(teamId, competition);
+  if (!team) return;
+  const sql = db();
+  const people = await sql<{ id: string; participation_id: string; email: string; first_name: string }[]>`
+    select p.id, pa.id as participation_id, p.email, p.first_name
+    from hnh.participation pa join hnh.person p on p.id = pa.person_id
+    where pa.id in ${sql(participationIds)} and pa.team_id = ${teamId} and p.status = 'confirmed'`;
+  for (const person of people) {
+    await sendMail({
+      personId: person.id,
+      to: person.email,
+      template: "team_placed",
+      ...teamPlacedEmail(
+        person.first_name,
+        team.name,
+        competition,
+        team.join_code,
+        person.participation_id === team.lead_participation_id,
+        formatMissing(team.balance.missing),
+      ),
+    });
+  }
 }
 
 export async function myParticipations(personId: string): Promise<Partial<Record<Competition, MyParticipation>>> {

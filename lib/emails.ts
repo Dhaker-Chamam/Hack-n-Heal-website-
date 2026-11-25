@@ -79,6 +79,7 @@ export const TEMPLATE_LABEL: Record<string, string> = {
   reminder: "Rappel de confirmation",
   staff_login: "Connexion organisateur",
   teammate_joined: "Nouveau membre d'équipe",
+  team_placed: "Placement dans une équipe",
 };
 
 export const MAIL_STATUS_LABEL: Record<string, string> = {
@@ -92,6 +93,7 @@ export const link = {
   access: (token: string) => `${env.appUrl}/acces/${token}`,
   staffLogin: (token: string) => `${env.appUrl}/admin/acces/${token}`,
   resend: () => `${env.appUrl}/lien`,
+  team: (competition: Competition) => `${env.appUrl}/moi/equipe/${competition}`,
 };
 
 // ------------------------------------------------------------------ templates
@@ -168,6 +170,30 @@ export function teammateJoinedEmail(firstName: string, teamName: string, newcome
       p(`${newcomer} vient de rejoindre ton équipe.`),
       p(missing ? `Il manque encore ${missing}.` : "Ton équipe est complète et équilibrée."),
       p(`Bonne préparation, ${firstName}.`),
+    ]),
+  };
+}
+
+/** For someone the organisers seated in a team from /admin/equipes. */
+export function teamPlacedEmail(
+  firstName: string,
+  teamName: string,
+  competition: Competition,
+  code: string,
+  isLead: boolean,
+  missing: string,
+) {
+  return {
+    subject: `Tu fais partie de l'équipe ${teamName}`,
+    ...layout(`${firstName}, tu as une équipe`, [
+      p(`Les organisateurs t'ont placé·e dans l'équipe ${teamName} pour le ${COMPETITIONS[competition].label.toLowerCase()}.`),
+      facts([
+        [COMPETITIONS[competition].short, `${teamName} · code ${code}`],
+        ["Ton rôle", isLead ? "Chef d'équipe" : "Membre"],
+      ]),
+      p(missing ? `Il manque encore ${missing}.` : "L'équipe est complète et équilibrée."),
+      button("Voir mon équipe", link.team(competition)),
+      p("Si la page te demande ton adresse email, saisis-la pour recevoir un nouveau lien personnel."),
     ]),
   };
 }
