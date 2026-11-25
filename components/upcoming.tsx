@@ -10,12 +10,15 @@ export function Upcoming({
   intro,
   opens,
   facts,
+  before,
   children,
 }: {
   title: string;
   intro: ReactNode;
   opens: string;
   facts: [ReactNode, ReactNode][];
+  /** what the page already offers, shown full width above the "opens later" part */
+  before?: ReactNode;
   children?: ReactNode;
 }) {
   return (
@@ -26,6 +29,7 @@ export function Upcoming({
           {opens}
         </p>
       </PageHero>
+      {before}
       <div className="mx-auto grid max-w-6xl gap-12 px-5 py-12 md:py-16 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="grid max-w-measure content-start gap-4 text-lg text-ink">{children}</div>
         <aside>

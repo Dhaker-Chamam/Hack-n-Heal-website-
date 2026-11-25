@@ -174,7 +174,7 @@ Content edge: `max-w-7xl` with 20px (phone) or 40px (desktop) inner padding on t
 
 ## Motion
 
-framer-motion, landing page only, always under `MotionConfig reducedMotion="user"`:
+framer-motion, on the landing page and for its five warm-up games where they are reused on `/jeux`, always under `MotionConfig reducedMotion="user"`:
 - the hero symbol draws itself (brackets, then stem, then branches), then the title rises in;
 - the hero symbol drifts with scroll (parallax, 120px over 600px);
 - blocks rise 28px and fade in once as they enter the viewport (0.8s, ease-out-expo);

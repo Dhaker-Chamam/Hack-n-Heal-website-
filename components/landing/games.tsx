@@ -221,7 +221,8 @@ const GAMES = [
 ] as const;
 const PETRI_TURF = "https://loomsou.nekoweb.org/";
 
-export function Games() {
+/** The five warm-up games: one card each, played in a dialog. On the landing page and on /jeux. */
+export function GameGrid() {
   const [open, setOpen] = useState<number | null>(null);
   const openers = useRef<(HTMLButtonElement | null)[]>([]);
   const close = () => {
@@ -230,11 +231,8 @@ export function Games() {
     if (was !== null) openers.current[was]?.focus();
   };
   return (
-    <section id="jeux" className="mx-auto max-w-7xl scroll-mt-20 px-5 py-28 md:px-10">
-      <Reveal>
-        <SectionTitle>Échauffe tes neurones.</SectionTitle>
-      </Reveal>
-      <div className="mt-12 grid gap-px bg-jade/15 sm:grid-cols-2 lg:grid-cols-5">
+    <>
+      <div className="grid gap-px bg-jade/15 sm:grid-cols-2 lg:grid-cols-5">
         {GAMES.map(([t, d], i) => (
           <motion.button
             key={t}
@@ -258,6 +256,21 @@ export function Games() {
           </motion.button>
         ))}
       </div>
+      {open !== null && <GameDialog id={open} title={GAMES[open][0]} onClose={close} />}
+    </>
+  );
+}
+
+/** The landing page's games section. */
+export function Games() {
+  return (
+    <section id="jeux" className="mx-auto max-w-7xl scroll-mt-20 px-5 py-28 md:px-10">
+      <Reveal>
+        <SectionTitle>Échauffe tes neurones.</SectionTitle>
+      </Reveal>
+      <div className="mt-12">
+        <GameGrid />
+      </div>
       <p className="mt-8 text-graphite">
         Avec classement et goodies à gagner : Codons et Glycémie 24 h, à partir du lundi 30 novembre sur la{" "}
         <Link href="/jeux" className="font-semibold text-emerald underline">
@@ -265,7 +278,6 @@ export function Games() {
         </Link>
         .
       </p>
-      {open !== null && <GameDialog id={open} title={GAMES[open][0]} onClose={close} />}
     </section>
   );
 }
