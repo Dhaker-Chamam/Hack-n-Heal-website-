@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Download, Search } from "lucide-react";
 import { buttonClass } from "@/components/ui/button";
-import { listRegistrations, type RegistrationFilters } from "@/lib/admin-queries";
+import { listRegistrations, tagFilter, type RegistrationFilters } from "@/lib/admin-queries";
 import { requireStaff } from "@/lib/admin";
-import { DISCIPLINES, PROFILE_KIND_LABEL } from "@/lib/constants";
+import { PROFILE_KIND_LABEL, SPECIALITIES, specialityLabel } from "@/lib/constants";
 import { formatShort } from "@/lib/time";
 
 export const metadata: Metadata = { title: "Inscriptions" };
@@ -25,7 +25,7 @@ export default async function RegistrationsPage({ searchParams }: { searchParams
   const page = Math.max(1, Number(f.page) || 1);
   const rows = all.slice((page - 1) * PAGE, page * PAGE);
   const qs = new URLSearchParams(Object.entries(f).filter(([k, v]) => v && k !== "page") as [string, string][]);
-  const label = (v: string) => DISCIPLINES.find((d) => d.value === v)?.label ?? v;
+  const tags = tagFilter(f.tag);
 
   return (
     <div>
@@ -41,23 +41,43 @@ export default async function RegistrationsPage({ searchParams }: { searchParams
         </a>
       </div>
 
-      <form className="mt-6 grid gap-3 border-y border-jade/15 py-4 sm:grid-cols-2 lg:grid-cols-[minmax(0,2fr)_repeat(3,minmax(0,1fr))_auto_auto] lg:items-end" role="search">
-        <div>
-          <label htmlFor="q" className="block text-small font-semibold text-ink">
-            Recherche
+      <form className="mt-6 grid gap-4 border-y border-jade/15 py-4" role="search">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,2fr)_repeat(3,minmax(0,1fr))_auto] lg:items-end">
+          <div>
+            <label htmlFor="q" className="block text-small font-semibold text-ink">
+              Recherche
+            </label>
+            <input id="q" name="q" defaultValue={f.q} placeholder="Nom, email, code, établissement" className="control mt-1 min-h-10! py-2!" />
+          </div>
+          <Select name="competition" label="Compétition" value={f.competition} options={[["", "Toutes"], ["medical", "Médical"], ["bioinfo", "Bioinformatique"]]} />
+          <Select name="status" label="Statut" value={f.status} options={[["", "Tous"], ...Object.entries(STATUS_LABEL)]} />
+          <Select name="profile" label="Profil" value={f.profile} options={[["", "Tous"], ...Object.entries(PROFILE_KIND_LABEL)]} />
+          <label className="flex min-h-10 items-center gap-2 text-small font-semibold text-ink">
+            <input type="checkbox" name="sans_equipe" value="1" defaultChecked={f.sans_equipe === "1"} className="size-4" />
+            Sans équipe
           </label>
-          <input id="q" name="q" defaultValue={f.q} placeholder="Nom, email, code, établissement" className="control mt-1 min-h-10! py-2!" />
         </div>
-        <Select name="competition" label="Compétition" value={f.competition} options={[["", "Toutes"], ["medical", "Médical"], ["bioinfo", "Bioinformatique"]]} />
-        <Select name="status" label="Statut" value={f.status} options={[["", "Tous"], ...Object.entries(STATUS_LABEL)]} />
-        <Select name="profile" label="Profil" value={f.profile} options={[["", "Tous"], ...Object.entries(PROFILE_KIND_LABEL)]} />
-        <label className="flex min-h-10 items-center gap-2 text-small font-semibold text-ink">
-          <input type="checkbox" name="sans_equipe" value="1" defaultChecked={f.sans_equipe === "1"} className="size-4" />
-          Sans équipe
-        </label>
-        <button type="submit" className={buttonClass("primary", "sm")}>
-          <Search aria-hidden className="size-4" strokeWidth={2} /> Filtrer
-        </button>
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <fieldset>
+            <legend className="text-small font-semibold text-ink">
+              Spécialités <span className="font-normal text-graphite">(au moins une de celles cochées)</span>
+            </legend>
+            <div className="mt-1 flex flex-wrap gap-2">
+              {SPECIALITIES.map((s) => (
+                <label
+                  key={s.value}
+                  className="cursor-pointer border border-jade/30 bg-white px-3 py-1.5 text-small text-ink transition-colors duration-150 hover:border-jade has-checked:border-emerald has-checked:bg-mist has-checked:font-semibold has-checked:text-jade has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-emerald"
+                >
+                  <input type="checkbox" name="tag" value={s.value} defaultChecked={tags.includes(s.value)} className="sr-only" />
+                  {s.label}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+          <button type="submit" className={buttonClass("primary", "sm")}>
+            <Search aria-hidden className="size-4" strokeWidth={2} /> Filtrer
+          </button>
+        </div>
       </form>
 
       <div className="mt-4 overflow-x-auto">
@@ -84,7 +104,7 @@ export default async function RegistrationsPage({ searchParams }: { searchParams
                 </td>
                 <td className="py-2.5 pr-3 text-ink">{r.institution}</td>
                 <td className="py-2.5 pr-3 text-ink">
-                  {label(r.discipline)}
+                  {r.specialities.map(specialityLabel).join(", ")}
                   <span className="block text-graphite">{PROFILE_KIND_LABEL[r.profile_kind]}</span>
                 </td>
                 <td className="py-2.5 pr-3">

@@ -206,7 +206,7 @@ The landing page keeps two features of its design that the generic rules would r
 ## Do's and Don'ts
 
 - **Do** check every new text pair against the contrast notes above.
-- **Do** keep the word "mur" out of the interface: the online feed is "l'Agora".
+- **Do** keep the word "mur" out of the interface: the online feed is "The Wall".
 - **Don't** use the old identity file `assets/logos/hnh-symbol.svg` (blue chevrons, cyan circuit plant).
 - **Don't** draw a badge, circle, medical cross, DNA helix or plant illustration around or beside the symbol.
 - **Don't** add shadows, gradients, glass, blur or rounded corners.

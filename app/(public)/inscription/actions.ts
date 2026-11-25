@@ -3,7 +3,15 @@
 import { after } from "next/server";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { COMPETITIONS, DISCIPLINES, INSTITUTIONS, SKILLS, STUDY_LEVELS, type Competition } from "@/lib/constants";
+import {
+  COMPETITIONS,
+  INSTITUTIONS,
+  MAX_SPECIALITIES,
+  SKILLS,
+  SPECIALITY_VALUES,
+  STUDY_LEVELS,
+  type Competition,
+} from "@/lib/constants";
 import { newToken, tokenHash } from "@/lib/crypto";
 import { db, UserError } from "@/lib/db";
 import { sendMail } from "@/lib/email";
@@ -12,7 +20,9 @@ import { cvUploadEnabled } from "@/lib/env";
 import { rateLimit } from "@/lib/ratelimit";
 import { applyTeamChoice, assertWindow, newParticipantCode, recordConsents, type TeamChoice } from "@/lib/registration";
 import { ipHash } from "@/lib/request";
+import { FACEBOOK_ERROR, normaliseFacebook } from "@/lib/social";
 import { checkPdf, uploadCv } from "@/lib/storage";
+import { profileKindOf } from "@/lib/teams";
 import { runMaintenance } from "@/lib/maintenance";
 
 export type RegisterState = {
@@ -59,11 +69,18 @@ const schema = z
     institution: z.enum(INSTITUTIONS, { error: REQUIRED }),
     institution_other: z.string().trim().max(120).optional(),
     study_level: z.enum(STUDY_LEVELS, { error: REQUIRED }),
-    discipline: z.enum(DISCIPLINES.map((d) => d.value) as [string, ...string[]], { error: "Choisis ton profil principal." }),
+    specialities: z
+      .array(z.enum(SPECIALITY_VALUES as [string, ...string[]]))
+      .min(1, "Choisis au moins une spécialité.")
+      .max(MAX_SPECIALITIES, `${MAX_SPECIALITIES} spécialités maximum.`),
     skills: z.array(z.enum(SKILLS)).max(8, "8 compétences maximum."),
     link_url: z
       .union([z.literal(""), z.url({ protocol: /^https$/, error: "Lien invalide (il doit commencer par https://)." })])
       .optional(),
+    facebook: z
+      .string()
+      .trim()
+      .refine((s) => !s || normaliseFacebook(s) !== null, FACEBOOK_ERROR),
     kaggle_username: z.string().trim().max(60).optional(),
     has_laptop: z.boolean(),
     adult: z.literal(true, { error: "Tu dois avoir 18 ans ou plus pour participer." }),
@@ -111,9 +128,10 @@ export async function register(_prev: RegisterState, form: FormData): Promise<Re
     institution: form.get("institution"),
     institution_other: form.get("institution_other") || undefined,
     study_level: form.get("study_level"),
-    discipline: form.get("discipline"),
+    specialities: form.getAll("specialities").map(String),
     skills: form.getAll("skills").map(String),
     link_url: form.get("link_url") ?? "",
+    facebook: form.get("facebook") ?? "",
     kaggle_username: form.get("kaggle_username") || undefined,
     has_laptop: bool("has_laptop"),
     adult: bool("adult"),
@@ -181,7 +199,7 @@ export async function register(_prev: RegisterState, form: FormData): Promise<Re
 
   const token = newToken();
   const personId = crypto.randomUUID();
-  const discipline = DISCIPLINES.find((d) => d.value === v.discipline)!;
+  const facebook = v.facebook ? normaliseFacebook(v.facebook) : null;
   const institution = v.institution === "Autre établissement" ? v.institution_other! : v.institution;
 
   try {
@@ -195,11 +213,12 @@ export async function register(_prev: RegisterState, form: FormData): Promise<Re
       }
       const code = await newParticipantCode(tx);
       await tx`
-        insert into hnh.person (id, email, first_name, last_name, phone, institution, study_level, discipline,
-          profile_kind, skills, link_url, photo_opt_out, internship_offers_opt_in, cv_share_opt_in,
-          access_token_hash, participant_code)
+        insert into hnh.person (id, email, first_name, last_name, phone, institution, study_level, specialities,
+          profile_kind, skills, link_url, facebook, facebook_kind, photo_opt_out, internship_offers_opt_in,
+          cv_share_opt_in, access_token_hash, participant_code)
         values (${personId}, ${v.email}, ${v.first_name}, ${v.last_name}, ${v.phone}, ${institution}, ${v.study_level},
-          ${discipline.value}, ${discipline.kind}, ${v.skills}, ${v.link_url || null}, ${v.photo_opt_out},
+          ${v.specialities}, ${profileKindOf(v.specialities)}, ${v.skills}, ${v.link_url || null},
+          ${facebook?.value ?? null}, ${facebook?.kind ?? null}, ${v.photo_opt_out},
           ${v.internship}, false, ${tokenHash(token)}, ${code})`;
 
       for (const c of v.competitions) {

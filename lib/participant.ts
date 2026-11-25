@@ -1,8 +1,10 @@
 import "server-only";
 import type { Competition, ProfileKind } from "./constants";
 import { db } from "./db";
+import { sendMail } from "./email";
+import { teammateJoinedEmail } from "./emails";
 import { teamMembers, type Member } from "./registration";
-import { teamBalance, type TeamBalance } from "./teams";
+import { formatMissing, teamBalance, type TeamBalance } from "./teams";
 
 export type MyTeam = {
   id: string;
@@ -31,6 +33,31 @@ export async function loadTeam(teamId: string, competition: Competition): Promis
   if (!t) return null;
   const members = await teamMembers(db(), t.id);
   return { ...t, members, balance: teamBalance(competition, members.map((m) => m.profile_kind)) };
+}
+
+/** Tells the team lead, when confirmed and not the newcomer, that someone joined the team. */
+export async function notifyLead(
+  teamId: string,
+  competition: Competition,
+  newcomer: { id: string; first_name: string; last_name: string },
+) {
+  const team = await loadTeam(teamId, competition);
+  if (!team?.lead_participation_id) return;
+  const [lead] = await db()<{ id: string; email: string; first_name: string }[]>`
+    select p.id, p.email, p.first_name from hnh.participation pa join hnh.person p on p.id = pa.person_id
+    where pa.id = ${team.lead_participation_id} and p.status = 'confirmed' and p.id <> ${newcomer.id}`;
+  if (!lead) return;
+  await sendMail({
+    personId: lead.id,
+    to: lead.email,
+    template: "teammate_joined",
+    ...teammateJoinedEmail(
+      lead.first_name,
+      team.name,
+      `${newcomer.first_name} ${newcomer.last_name}`,
+      formatMissing(team.balance.missing),
+    ),
+  });
 }
 
 export async function myParticipations(personId: string): Promise<Partial<Record<Competition, MyParticipation>>> {

@@ -1,4 +1,23 @@
-import { COMPETITIONS, type Competition, type ProfileKind } from "./constants";
+import { COMPETITIONS, SPECIALITIES, type Competition, type ProfileKind } from "./constants";
+
+/**
+ * The side a person counts for, from their speciality tags: "both" when the tags reach
+ * the health and the tech side (or include a "both" tag), "other" when they reach neither.
+ * Stored as person.profile_kind on every write.
+ */
+export function profileKindOf(tags: readonly string[]): ProfileKind {
+  const sides = new Set<ProfileKind>(SPECIALITIES.filter((s) => tags.includes(s.value)).map((s) => s.side));
+  if (sides.has("both") || (sides.has("health") && sides.has("tech"))) return "both";
+  return sides.has("health") ? "health" : sides.has("tech") ? "tech" : "other";
+}
+
+/** Head counts of a team. The three sides exclude each other; neutral profiles only count in members. */
+export type TeamComposition = { members: number; tech: number; health: number; both: number };
+
+export function teamComposition(kinds: readonly ProfileKind[]): TeamComposition {
+  const count = (k: ProfileKind) => kinds.filter((x) => x === k).length;
+  return { members: kinds.length, tech: count("tech"), health: count("health"), both: count("both") };
+}
 
 export type TeamBalance = {
   size: number;
@@ -13,16 +32,13 @@ export type TeamBalance = {
 
 /**
  * Mix rule shared by both competitions: at least one health / life-science
- * profile and at least one tech profile. "both" (bioinformatics) counts for
- * either side, but a single "both" member cannot satisfy both sides alone
- * unless another member covers the other side.
+ * profile and at least one tech profile. Each member's side comes from their
+ * speciality tags (profileKindOf). A "both" member counts for either side,
+ * but cannot satisfy both sides alone unless another member covers the other side.
  */
-export function teamBalance(competition: Competition, kinds: ProfileKind[]): TeamBalance {
+export function teamBalance(competition: Competition, kinds: readonly ProfileKind[]): TeamBalance {
   const { min, max } = COMPETITIONS[competition];
-  const size = kinds.length;
-  const health = kinds.filter((k) => k === "health").length;
-  const tech = kinds.filter((k) => k === "tech").length;
-  const both = kinds.filter((k) => k === "both").length;
+  const { members: size, health, tech, both } = teamComposition(kinds);
 
   // assign "both" members to whichever side is empty first
   let h = health;

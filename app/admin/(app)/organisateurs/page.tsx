@@ -16,7 +16,7 @@ export default async function StaffPage() {
       <div>
         <h1 className="t-headline">Organisateurs</h1>
         <p className="mt-2 max-w-measure text-graphite">
-          Administration : tout. Modération : l&apos;Agora. Accueil : le scanner et la recherche de participants. Chacun se
+          Administration : tout. Modération : The Wall. Accueil : le scanner et la recherche de participants. Chacun se
           connecte avec un lien envoyé à son email.
         </p>
       </div>

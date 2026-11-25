@@ -9,7 +9,7 @@ import { Alert } from "@/components/ui/alert";
 import { buttonClass } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/field";
 import { Squares, StatusMarker } from "@/components/ui/markers";
-import { COMPETITIONS, DISCIPLINES, INSTITUTIONS, SKILLS, STUDY_LEVELS, type Competition } from "@/lib/constants";
+import { COMPETITIONS, INSTITUTIONS, SKILLS, SPECIALITIES, STUDY_LEVELS, type Competition } from "@/lib/constants";
 import { cvUploadEnabled } from "@/lib/env";
 import { myParticipations, type MyParticipation } from "@/lib/participant";
 import { qrPayload, qrSvg } from "@/lib/qr";
@@ -118,13 +118,14 @@ export default async function MePage({ searchParams }: { searchParams: Promise<R
                     phone: person.phone ?? "",
                     institution: person.institution,
                     study_level: person.study_level,
-                    discipline: person.discipline,
+                    specialities: person.specialities,
                     skills: person.skills,
                     link_url: person.link_url ?? "",
+                    facebook: person.facebook ?? "",
                   }}
                   institutions={INSTITUTIONS}
                   levels={STUDY_LEVELS}
-                  disciplines={DISCIPLINES}
+                  specialities={SPECIALITIES}
                   skills={SKILLS}
                 />
               </div>
@@ -192,7 +193,7 @@ export default async function MePage({ searchParams }: { searchParams: Promise<R
                 Mes données
               </h2>
               <p className="mt-2 max-w-measure text-graphite">
-                Tu peux supprimer ton inscription à tout moment : profil, équipes, CV et publications sur l&apos;Agora sont effacés
+                Tu peux supprimer ton inscription à tout moment : profil, équipes, CV et publications sur The Wall sont effacés
                 immédiatement. Cette action est définitive. Voir la{" "}
                 <Link href="/confidentialite" className="font-semibold text-emerald underline">
                   politique de données personnelles

@@ -4,13 +4,15 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { audit } from "@/lib/audit";
-import { DISCIPLINES, INSTITUTIONS, SKILLS, STUDY_LEVELS } from "@/lib/constants";
+import { INSTITUTIONS, MAX_SPECIALITIES, SKILLS, SPECIALITY_VALUES, STUDY_LEVELS } from "@/lib/constants";
 import { db } from "@/lib/db";
 import { cvUploadEnabled } from "@/lib/env";
 import { runMaintenance } from "@/lib/maintenance";
 import { recordConsents, type ConsentKind } from "@/lib/registration";
 import { clearParticipantCookie, currentPerson, type Person } from "@/lib/session";
+import { FACEBOOK_ERROR, normaliseFacebook } from "@/lib/social";
 import { checkPdf, deleteCv, uploadCv } from "@/lib/storage";
+import { profileKindOf } from "@/lib/teams";
 
 export type FormState = { ok: boolean; errors: Record<string, string>; message?: string };
 
@@ -33,9 +35,16 @@ const profileSchema = z
     institution: z.string().trim().min(1, REQUIRED).max(120),
     institution_other: z.string().trim().max(120).optional(),
     study_level: z.enum(STUDY_LEVELS, { error: REQUIRED }),
-    discipline: z.enum(DISCIPLINES.map((d) => d.value) as [string, ...string[]], { error: REQUIRED }),
+    specialities: z
+      .array(z.enum(SPECIALITY_VALUES as [string, ...string[]]))
+      .min(1, "Choisis au moins une spécialité.")
+      .max(MAX_SPECIALITIES, `${MAX_SPECIALITIES} spécialités maximum.`),
     skills: z.array(z.enum(SKILLS)).max(8, "8 compétences maximum."),
     link_url: z.union([z.literal(""), z.url({ protocol: /^https$/, error: "Le lien doit commencer par https://" })]),
+    facebook: z
+      .string()
+      .trim()
+      .refine((s) => !s || normaliseFacebook(s) !== null, FACEBOOK_ERROR),
   })
   .superRefine((v, ctx) => {
     if (v.institution === "Autre établissement" && !v.institution_other) {
@@ -52,9 +61,10 @@ export async function updateProfile(_prev: FormState, form: FormData): Promise<F
     institution: form.get("institution"),
     institution_other: form.get("institution_other") || undefined,
     study_level: form.get("study_level"),
-    discipline: form.get("discipline"),
+    specialities: form.getAll("specialities").map(String),
     skills: form.getAll("skills").map(String),
     link_url: form.get("link_url") ?? "",
+    facebook: form.get("facebook") ?? "",
   });
   if (!parsed.success) {
     const errors: Record<string, string> = {};
@@ -69,12 +79,13 @@ export async function updateProfile(_prev: FormState, form: FormData): Promise<F
         ? v.institution
         : null;
   if (!institution) return { ok: false, errors: { institution: "Choisis un établissement dans la liste." } };
-  const discipline = DISCIPLINES.find((d) => d.value === v.discipline)!;
+  const facebook = v.facebook ? normaliseFacebook(v.facebook) : null;
 
   await db()`
     update hnh.person set first_name = ${v.first_name}, last_name = ${v.last_name}, phone = ${v.phone},
-      institution = ${institution}, study_level = ${v.study_level}, discipline = ${discipline.value},
-      profile_kind = ${discipline.kind}, skills = ${v.skills}, link_url = ${v.link_url || null}, updated_at = now()
+      institution = ${institution}, study_level = ${v.study_level}, specialities = ${v.specialities},
+      profile_kind = ${profileKindOf(v.specialities)}, skills = ${v.skills}, link_url = ${v.link_url || null},
+      facebook = ${facebook?.value ?? null}, facebook_kind = ${facebook?.kind ?? null}, updated_at = now()
     where id = ${person.id}`;
   revalidatePath("/moi");
   return { ok: true, errors: {}, message: "Profil enregistré." };

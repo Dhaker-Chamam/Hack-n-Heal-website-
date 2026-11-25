@@ -7,9 +7,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { COMPETITIONS, type Competition } from "@/lib/constants";
 import { db, UserError } from "@/lib/db";
-import { sendMail } from "@/lib/email";
-import { teammateJoinedEmail } from "@/lib/emails";
-import { loadTeam } from "@/lib/participant";
+import { notifyLead } from "@/lib/participant";
 import { rateLimit } from "@/lib/ratelimit";
 import {
   applyTeamChoice,
@@ -19,7 +17,6 @@ import {
   type TeamChoice,
 } from "@/lib/registration";
 import { currentPerson, type Person } from "@/lib/session";
-import { formatMissing } from "@/lib/teams";
 import type { FormState } from "../actions";
 
 async function requirePerson(): Promise<Person> {
@@ -62,26 +59,6 @@ function toState(e: unknown): FormState {
   }
   console.error("[team]", e);
   return { ok: false, errors: {}, message: "Une erreur technique est survenue. Réessaie dans un instant." };
-}
-
-async function notifyLead(teamId: string, competition: Competition, newcomer: Person) {
-  const team = await loadTeam(teamId, competition);
-  if (!team?.lead_participation_id) return;
-  const [lead] = await db()<{ id: string; email: string; first_name: string }[]>`
-    select p.id, p.email, p.first_name from hnh.participation pa join hnh.person p on p.id = pa.person_id
-    where pa.id = ${team.lead_participation_id} and p.status = 'confirmed' and p.id <> ${newcomer.id}`;
-  if (!lead) return;
-  await sendMail({
-    personId: lead.id,
-    to: lead.email,
-    template: "teammate_joined",
-    ...teammateJoinedEmail(
-      lead.first_name,
-      team.name,
-      `${newcomer.first_name} ${newcomer.last_name}`,
-      formatMissing(team.balance.missing),
-    ),
-  });
 }
 
 /** Joins a competition the person is not in yet, with a team choice. */

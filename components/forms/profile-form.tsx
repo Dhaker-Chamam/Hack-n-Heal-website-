@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import type { FormState } from "@/app/(public)/moi/actions";
+import { MAX_SPECIALITIES } from "@/lib/constants";
 import { Alert } from "../ui/alert";
 import { Button } from "../ui/button";
 import { Field, FieldError, describedBy } from "../ui/field";
@@ -12,9 +13,10 @@ export type ProfileDefaults = {
   phone: string;
   institution: string;
   study_level: string;
-  discipline: string;
+  specialities: string[];
   skills: string[];
   link_url: string;
+  facebook: string;
 };
 
 export function ProfileForm({
@@ -22,14 +24,14 @@ export function ProfileForm({
   defaults,
   institutions,
   levels,
-  disciplines,
+  specialities,
   skills,
 }: {
   action: (prev: FormState, form: FormData) => Promise<FormState>;
   defaults: ProfileDefaults;
   institutions: readonly string[];
   levels: readonly string[];
-  disciplines: readonly { value: string; label: string }[];
+  specialities: readonly { value: string; label: string }[];
   skills: readonly string[];
 }) {
   const [state, formAction, pending] = useActionState(action, { ok: false, errors: {} });
@@ -95,15 +97,35 @@ export function ProfileForm({
         )}
       </div>
 
-      <Field id="discipline" label="Profil principal" hint="Changer de profil modifie l'équilibre santé et tech de tes équipes." error={err("discipline")}>
-        <select id="discipline" name="discipline" defaultValue={defaults.discipline} className="control sm:max-w-xs" aria-describedby="discipline-hint">
-          {disciplines.map((d) => (
-            <option key={d.value} value={d.value}>
+      <fieldset aria-describedby={describedBy("specialities", true, err("specialities"))}>
+        <legend className="font-semibold text-ink">Profil principal</legend>
+        <p id="specialities-hint" className="mt-0.5 text-small text-graphite">
+          De 1 à {MAX_SPECIALITIES} spécialités. En changer modifie l&apos;équilibre santé et tech de tes équipes.
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {specialities.map((d) => (
+            <label
+              key={d.value}
+              className="cursor-pointer border border-graphite bg-white px-4 py-2.5 text-small font-semibold text-ink transition-colors duration-150 hover:border-jade has-checked:border-jade has-checked:bg-jade has-checked:text-white has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-emerald"
+            >
+              <input
+                type="checkbox"
+                name="specialities"
+                value={d.value}
+                defaultChecked={defaults.specialities.includes(d.value)}
+                className="sr-only"
+                onChange={(e) => {
+                  // counted in the form itself: React resets the boxes after each save, a state counter would drift
+                  const ticked = e.currentTarget.form?.querySelectorAll('input[name="specialities"]:checked').length ?? 0;
+                  if (ticked > MAX_SPECIALITIES) e.currentTarget.checked = false;
+                }}
+              />
               {d.label}
-            </option>
+            </label>
           ))}
-        </select>
-      </Field>
+        </div>
+        <FieldError id="specialities-error" message={err("specialities")} />
+      </fieldset>
 
       <fieldset aria-describedby="profile-skills-hint">
         <legend className="font-semibold text-ink">Compétences</legend>
@@ -139,6 +161,10 @@ export function ProfileForm({
 
       <Field id="link_url" label="Lien LinkedIn ou GitHub" optional error={err("link_url")}>
         {input("link_url", { type: "url", inputMode: "url", placeholder: "https://" })}
+      </Field>
+
+      <Field id="facebook" label="Facebook (lien ou nom du profil)" optional error={err("facebook")}>
+        {input("facebook", { autoComplete: "off", maxLength: 200 })}
       </Field>
 
       <div className="flex flex-wrap items-center gap-4">

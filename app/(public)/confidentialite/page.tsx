@@ -44,7 +44,7 @@ export default function PrivacyPage() {
             case correspondante, et tu peux retirer ton accord tant qu&apos;il n&apos;a pas été transmis.
           </li>
           <li>
-            <strong>Agora et mini-jeux</strong> : tes publications, avec ton prénom, l&apos;initiale de ton nom et ton
+            <strong>The Wall et mini-jeux</strong> : tes publications, avec ton prénom, l&apos;initiale de ton nom et ton
             établissement ; tes scores si tu saisis ton code participant.
           </li>
           <li>
@@ -90,7 +90,7 @@ export default function PrivacyPage() {
       <Section id="duree" title="Combien de temps">
         <ul>
           <li>Inscription non confirmée : supprimée au bout de 72 heures.</li>
-          <li>Empreintes techniques des votes et des jeux : supprimées 30 jours après la désignation du gagnant de l&apos;Agora.</li>
+          <li>Empreintes techniques des votes et des jeux : supprimées 30 jours après la désignation du gagnant de The Wall.</li>
           <li>Numéros de téléphone : supprimés le 31 décembre 2026.</li>
           <li>CV : supprimés le 6 mars 2027 au plus tard.</li>
           <li>Autres données de participation : anonymisées le 6 juin 2027.</li>

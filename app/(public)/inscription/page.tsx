@@ -4,7 +4,7 @@ import { PageHero } from "@/components/page-hero";
 import { RegistrationForm } from "@/components/registration-form";
 import { Alert } from "@/components/ui/alert";
 import { Facts } from "@/components/ui/facts";
-import { DISCIPLINES, INSTITUTIONS, SKILLS, STUDY_LEVELS } from "@/lib/constants";
+import { INSTITUTIONS, SKILLS, SPECIALITIES, STUDY_LEVELS } from "@/lib/constants";
 import { cvUploadEnabled } from "@/lib/env";
 import { currentPerson } from "@/lib/session";
 import { formatDeadline } from "@/lib/time";
@@ -48,7 +48,7 @@ export default async function InscriptionPage() {
             cvEnabled={cvUploadEnabled()}
             institutions={INSTITUTIONS}
             levels={STUDY_LEVELS}
-            disciplines={DISCIPLINES}
+            specialities={SPECIALITIES}
             skills={SKILLS}
           />
         </div>

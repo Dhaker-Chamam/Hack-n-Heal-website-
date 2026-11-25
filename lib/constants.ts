@@ -29,17 +29,27 @@ export const COMPETITIONS: Record<
   },
 };
 
-export const DISCIPLINES = [
-  { value: "medecine", label: "Médecine", kind: "health" },
-  { value: "pharmacie", label: "Pharmacie", kind: "health" },
-  { value: "biologie", label: "Biologie", kind: "health" },
-  { value: "bioinformatique", label: "Bioinformatique", kind: "both" },
-  { value: "informatique", label: "Informatique", kind: "tech" },
-  { value: "data_ia", label: "Data et IA", kind: "tech" },
-  { value: "autre", label: "Autre", kind: "other" },
-] as const satisfies readonly { value: string; label: string; kind: ProfileKind }[];
+/**
+ * Speciality tags and the side each one counts for when balancing a team ("other" is neutral).
+ * This list is the only place to edit them. The database repeats it twice: the check on
+ * person.specialities and the profile_kind statement in supabase/migrations/0002, to re-run after a change.
+ */
+export const SPECIALITIES = [
+  { value: "medecine", label: "Médecine", side: "health" },
+  { value: "pharmacie", label: "Pharmacie", side: "health" },
+  { value: "biologie", label: "Biologie", side: "health" },
+  { value: "chimie", label: "Chimie", side: "health" },
+  { value: "bioinformatique", label: "Bioinformatique", side: "both" },
+  { value: "dev", label: "Développement", side: "tech" },
+  { value: "ai_data", label: "IA & Data", side: "tech" },
+  { value: "autre", label: "Autre", side: "other" },
+] as const satisfies readonly { value: string; label: string; side: ProfileKind }[];
 
-export type Discipline = (typeof DISCIPLINES)[number]["value"];
+export type Speciality = (typeof SPECIALITIES)[number]["value"];
+export const SPECIALITY_VALUES: readonly string[] = SPECIALITIES.map((s) => s.value);
+export const MAX_SPECIALITIES = 4;
+
+export const specialityLabel = (value: string): string => SPECIALITIES.find((s) => s.value === value)?.label ?? value;
 
 export const PROFILE_KIND_LABEL: Record<ProfileKind, string> = {
   health: "Santé",
@@ -97,6 +107,16 @@ export const SKILLS = [
   "Santé publique",
   "Pitch",
 ] as const;
+
+/** Axes of the "Compétences" radar in /admin/equipes: 16 skills are unreadable as 16 axes. */
+export const SKILL_GROUPS = [
+  { label: "Code & stats", skills: ["Python", "R", "Statistiques"] },
+  { label: "IA", skills: ["Machine learning", "Deep learning", "Vision par ordinateur", "Traitement du langage"] },
+  { label: "Web & design", skills: ["Web", "Mobile", "UI/UX"] },
+  { label: "Biologie", skills: ["Génomique", "Biologie moléculaire"] },
+  { label: "Santé", skills: ["Pratique clinique", "Pharmacologie", "Santé publique"] },
+  { label: "Pitch", skills: ["Pitch"] },
+] as const satisfies readonly { label: string; skills: readonly (typeof SKILLS)[number][] }[];
 
 export const CONSENT_VERSION = "2026-11-16";
 

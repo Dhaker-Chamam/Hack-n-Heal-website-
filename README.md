@@ -2,7 +2,7 @@
 
 Official website for Hack'n'Heal — the health-tech hackathon bringing developers, designers, and innovators together to build solutions for a healthier future.
 
-The landing page (`/`, with four warm-up games), registration (solo or team, both competitions), personal space with QR code, team management, rules and privacy notice, and the organisers' back-office. French UI. Next.js 16 (App Router), Tailwind CSS 4, framer-motion on the landing page, Postgres (Supabase in production), Nodemailer over the club mailbox.
+The landing page (`/`, with five warm-up games), registration (solo or team, both competitions), personal space with QR code, team management, rules and privacy notice, and the organisers' back-office. French UI. Next.js 16 (App Router), Tailwind CSS 4, framer-motion on the landing page, Postgres (Supabase in production), Nodemailer over the club mailbox.
 
 The landing page was designed in `hnh/` (English, standalone) and ported to `app/page.tsx` and `components/landing/` in French. `hnh/` is kept as the design reference and is not part of the build.
 
@@ -11,7 +11,7 @@ The landing page was designed in `hnh/` (English, standalone) and ported to `app
 ```bash
 npm install
 cp .env.example .env.local      # then edit, see below
-npm run db:local                # terminal 1: local Postgres on 127.0.0.1:54329, migrated on first run
+npm run db:local                # terminal 1: local Postgres on 127.0.0.1:54329, applies the migrations not yet run
 npm run dev                     # terminal 2: http://localhost:3000
 ```
 
@@ -30,12 +30,12 @@ Without `SMTP_HOST`, emails are not sent: they are stored in the outbox and prin
 
 - Organiser login: `/admin/connexion` with an address listed in `ADMIN_EMAILS` (it becomes an admin on first request).
 - `npm run db:local -- reset` wipes the local database.
-- `npm test` runs the unit tests (team rules, deadlines, CSV).
+- `npm test` runs the unit tests (team rules, deadlines, CSV, Facebook links, radar data, migration 0002 on a database with old rows).
 - If styles look stale in `next dev` after editing `app/globals.css`, stop the server and delete `.next/`.
 
 ## Production setup
 
-1. **Supabase**: project `ytrxmjssqdcxuorsmxyu` in organization "insat", region eu-west-1 (Ireland). Already set up on 16 Nov 2026: schema applied, `hnh_app` password set, private `cvs` bucket created; the values are in the git-ignored `.env.supabase.local`. For a new project, apply `supabase/migrations/0001_init.sql`. It creates schema `hnh` (not exposed to the REST API) and role `hnh_app` without login. Give that role a password out of band, never in git:
+1. **Supabase**: project `ytrxmjssqdcxuorsmxyu` in organization "insat", region eu-west-1 (Ireland). Already set up on 16 Nov 2026: schema applied, `hnh_app` password set, private `cvs` bucket created; the values are in the git-ignored `.env.supabase.local`. For a new project, apply the files in `supabase/migrations/` in order. `0002` is safe to run again: on a live database, run it, deploy, then run it once more (it gives specialities to people registered by the old code in between). The first file creates schema `hnh` (not exposed to the REST API) and role `hnh_app` without login. Give that role a password out of band, never in git:
    `alter role hnh_app login password '<random>';`
    Then `DATABASE_URL=postgres://hnh_app.<project-ref>:<password>@aws-1-eu-west-1.pooler.supabase.com:6543/postgres?sslmode=require`.
 2. **CV storage** (optional): create a private bucket `cvs` and set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`. Without them, the CV field is hidden.
@@ -45,8 +45,9 @@ Without `SMTP_HOST`, emails are not sent: they are stored in the outbox and prin
 ## Rules enforced by the server
 
 - Every write checks its time window (`hnh.time_window`, editable in `/admin/calendrier`) in the same transaction, using the database clock. A close at midnight is displayed as 23:59 the day before.
-- Medical teams: 4 to 7 members; bioinformatics teams: 2 to 4; each needs a health and a tech profile (bioinformatics counts as either). Codes `MED-XXXX` / `BIO-XXXX`, never valid in the other competition.
+- Medical teams: 4 to 7 members; bioinformatics teams: 2 to 4; each needs a health and a tech profile. A person's side comes from their speciality tags (1 to 4, listed with their sides in `lib/constants.ts`); someone on both sides counts for whichever is missing, but not for both alone. Codes `MED-XXXX` / `BIO-XXXX`, never valid in the other competition.
 - Unconfirmed registrations hold their team seat for 72 h, get a reminder after 24 h, and are deleted after 72 h.
+- Organisers build and fix teams at `/admin/equipes` (admins and moderators). Those actions ignore the time windows but refuse a locked team until it is unlocked.
 - Personal links and staff sessions are 256-bit tokens stored only as hashes. IPs and devices are stored only as salted hashes.
 
 ## Not built yet

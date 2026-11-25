@@ -59,10 +59,10 @@ export default function RulesPage() {
         </ul>
       </Section>
 
-      <Section id="agora" title="Agora">
+      <Section id="the-wall" title="The Wall">
         <ul>
           <li>
-            L&apos;Agora est l&apos;espace de publication en ligne de l&apos;événement. Chaque participant·e confirmé·e peut y publier
+            The Wall est l&apos;espace de publication en ligne de l&apos;événement. Chaque participant·e confirmé·e peut y publier
             jusqu&apos;à 3 messages (projet, idée ou réflexion, 800 caractères, un lien facultatif, pas d&apos;image) jusqu&apos;au
             mercredi 2 décembre à 23:59.
           </li>
@@ -81,7 +81,7 @@ export default function RulesPage() {
         <ul>
           <li>Les mini-jeux sont ouverts à tous. Pour figurer au classement des lots, saisis ton code participant.</li>
           <li>Seul le meilleur score de chaque joueur compte ; les classements sont figés le dimanche 6 décembre à 12:00.</li>
-          <li>Les trois premiers de chaque jeu reçoivent des goodies. Les jeux n&apos;ont aucun effet sur les compétitions ni sur l&apos;Agora.</li>
+          <li>Les trois premiers de chaque jeu reçoivent des goodies. Les jeux n&apos;ont aucun effet sur les compétitions ni sur The Wall.</li>
           <li>Les scores obtenus par triche ou par modification du jeu sont supprimés.</li>
         </ul>
       </Section>

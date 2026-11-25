@@ -7,7 +7,7 @@ import { Alert } from "@/components/ui/alert";
 import { buttonClass } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/field";
 import { requireStaff } from "@/lib/admin";
-import { COMPETITIONS, DISCIPLINES, PROFILE_KIND_LABEL, type Competition } from "@/lib/constants";
+import { COMPETITIONS, PROFILE_KIND_LABEL, specialityLabel, type Competition } from "@/lib/constants";
 import { db } from "@/lib/db";
 import { MAIL_STATUS_LABEL, TEMPLATE_LABEL } from "@/lib/emails";
 import { cvUploadEnabled } from "@/lib/env";
@@ -31,7 +31,7 @@ const CONSENT_LABEL: Record<string, string> = {
   cv_share: "Transmission du CV",
   internship: "Offres de stage",
   photo_opt_out: "Pas de photos",
-  agora_display: "Affichage sur l'Agora",
+  agora_display: "Affichage sur The Wall",
 };
 
 export default async function RegistrationDetail({
@@ -55,7 +55,15 @@ export default async function RegistrationDetail({
     sql<{ template: string; status: string; created_at: Date; last_error: string | null }[]>`
       select template, status, created_at, last_error from hnh.email_outbox where person_id = ${id} order by created_at desc limit 20`,
   ]);
-  const discipline = DISCIPLINES.find((d) => d.value === p.discipline)?.label ?? p.discipline;
+  const specialities = p.specialities.map(specialityLabel).join(", ") || "—";
+  const facebook =
+    p.facebook && p.facebook_kind === "url" ? (
+      <a href={p.facebook} target="_blank" rel="noreferrer" className="font-semibold text-emerald underline">
+        {p.facebook}
+      </a>
+    ) : (
+      (p.facebook ?? "—")
+    );
 
   return (
     <div className="grid gap-10">
@@ -79,20 +87,23 @@ export default async function RegistrationDetail({
             Profil
           </h2>
           <dl className="mt-3 grid grid-cols-[10rem_1fr] gap-x-4 text-small">
-            {[
-              ["Email", p.email],
-              ["Téléphone", p.phone ?? "—"],
-              ["Établissement", p.institution],
-              ["Niveau", p.study_level],
-              ["Profil", `${discipline} (${PROFILE_KIND_LABEL[p.profile_kind]})`],
-              ["Compétences", p.skills.join(", ") || "—"],
-              ["Lien", p.link_url ?? "—"],
-              ["Inscription", formatShort(p.created_at)],
-              ["Confirmation", p.email_confirmed_at ? formatShort(p.email_confirmed_at) : "—"],
-              ["Photos", p.photo_opt_out ? "Ne pas photographier" : "Accepte"],
-              ["Offres de stage", p.internship_offers_opt_in ? "Oui" : "Non"],
-              ["CV", p.cv_path ? (p.cv_share_opt_in ? "Oui, transmission autorisée" : "Oui, non transmis") : "Non"],
-            ].map(([k, v]) => (
+            {(
+              [
+                ["Email", p.email],
+                ["Téléphone", p.phone ?? "—"],
+                ["Établissement", p.institution],
+                ["Niveau", p.study_level],
+                ["Profil", `${specialities} (${PROFILE_KIND_LABEL[p.profile_kind]})`],
+                ["Compétences", p.skills.join(", ") || "—"],
+                ["Lien", p.link_url ?? "—"],
+                ["Facebook", facebook],
+                ["Inscription", formatShort(p.created_at)],
+                ["Confirmation", p.email_confirmed_at ? formatShort(p.email_confirmed_at) : "—"],
+                ["Photos", p.photo_opt_out ? "Ne pas photographier" : "Accepte"],
+                ["Offres de stage", p.internship_offers_opt_in ? "Oui" : "Non"],
+                ["CV", p.cv_path ? (p.cv_share_opt_in ? "Oui, transmission autorisée" : "Oui, non transmis") : "Non"],
+              ] as [string, React.ReactNode][]
+            ).map(([k, v]) => (
               <div key={k} className="contents">
                 <dt className="border-t border-jade/15 py-2 text-graphite">{k}</dt>
                 <dd className="break-words border-t border-jade/15 py-2 text-ink">{v}</dd>

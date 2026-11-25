@@ -53,7 +53,7 @@ Key dates (Africa/Tunis):
 
 - Organizers use phones as QR scanners at the entrance. The INSAT Wi-Fi can saturate.
 - The landing page is part of the site, at `/`. The organisers designed it in English (`hnh/`, kept as the reference); it was ported in French on 18 Nov 2026 and sets the visual system for every page.
-- The physical "mur des sponsors" at the venue is unrelated to the online feed. The feed is called "l'Agora", and the word "mur" never appears in the site's interface.
+- The physical "mur des sponsors" at the venue is unrelated to the online feed. The feed is called "The Wall", and the word "mur" never appears in the site's interface.
 
 ## Capabilities and Constraints
 

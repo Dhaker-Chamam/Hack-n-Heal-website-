@@ -183,7 +183,7 @@ function GameDialog({ id, title, onClose }: { id: number; title: string; onClose
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         onClick={(e) => e.stopPropagation()}
-        className="max-h-[90svh] w-full max-w-2xl overflow-y-auto bg-jade p-6 md:p-10"
+        className={`max-h-[90svh] w-full overflow-y-auto bg-jade p-6 md:p-10 ${id === 4 ? "max-w-5xl" : "max-w-2xl"}`}
       >
         <div className="mb-8 flex items-start justify-between gap-4">
           <h2 className="text-2xl font-bold text-mist md:text-3xl">{title}</h2>
@@ -195,6 +195,18 @@ function GameDialog({ id, title, onClose }: { id: number; title: string; onClose
         {id === 1 && <Quiz qs={CONNECT} intro="Quel domaine relie ces mots ?" />}
         {id === 2 && <Quiz qs={AIH} intro="Écrit par une IA ou par un humain ? Ces exemples ont été écrits pour le jeu." />}
         {id === 3 && <Bio />}
+        {id === 4 && (
+          <>
+            <iframe src={PETRI_TURF} title="Petri Turf" sandbox="allow-scripts allow-same-origin" className="aspect-video w-full bg-abyss" />
+            <p className="mt-4 text-small text-mist/80">
+              Bataille de territoire en 60 secondes, seul ou à deux sur le même clavier. Clique sur le jeu pour commencer. Par Souhail Ben
+              Belhassen.{" "}
+              <a href={PETRI_TURF} target="_blank" rel="noopener noreferrer" className="font-semibold text-luminous underline">
+                Ouvrir en plein écran
+              </a>
+            </p>
+          </>
+        )}
       </motion.div>
     </div>
   );
@@ -205,7 +217,9 @@ const GAMES = [
   ["Trouve le lien", "Relie les disciplines."],
   ["IA ou humain ?", "Devine qui a écrit."],
   ["Défi bioinfo", "Décode une séquence."],
+  ["Petri Turf", "Conquiers la boîte de Petri."],
 ] as const;
+const PETRI_TURF = "https://loomsou.nekoweb.org/";
 
 export function Games() {
   const [open, setOpen] = useState<number | null>(null);
@@ -220,7 +234,7 @@ export function Games() {
       <Reveal>
         <SectionTitle>Échauffe tes neurones.</SectionTitle>
       </Reveal>
-      <div className="mt-12 grid gap-px bg-jade/15 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-12 grid gap-px bg-jade/15 sm:grid-cols-2 lg:grid-cols-5">
         {GAMES.map(([t, d], i) => (
           <motion.button
             key={t}

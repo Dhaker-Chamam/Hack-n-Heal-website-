@@ -22,10 +22,12 @@ export type Person = {
   phone: string | null;
   institution: string;
   study_level: string;
-  discipline: string;
+  specialities: string[];
   profile_kind: "health" | "tech" | "both" | "other";
   skills: string[];
   link_url: string | null;
+  facebook: string | null;
+  facebook_kind: "url" | "name" | null;
   photo_opt_out: boolean;
   internship_offers_opt_in: boolean;
   cv_path: string | null;
@@ -48,8 +50,8 @@ export async function clearParticipantCookie() {
 
 export async function personByToken(token: string): Promise<Person | null> {
   const [p] = await db()<Person[]>`
-    select id, email, first_name, last_name, phone, institution, study_level, discipline, profile_kind,
-           skills, link_url, photo_opt_out, internship_offers_opt_in, cv_path, cv_uploaded_at, cv_share_opt_in,
+    select id, email, first_name, last_name, phone, institution, study_level, specialities, profile_kind,
+           skills, link_url, facebook, facebook_kind, photo_opt_out, internship_offers_opt_in, cv_path, cv_uploaded_at, cv_share_opt_in,
            status, email_confirmed_at, participant_code, agora_blocked, created_at
     from hnh.person
     where access_token_hash = ${tokenHash(token)} and anonymized_at is null`;

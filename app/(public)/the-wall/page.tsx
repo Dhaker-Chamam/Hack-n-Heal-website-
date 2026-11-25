@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { Upcoming } from "@/components/upcoming";
 
-export const metadata: Metadata = { title: "Agora" };
+export const metadata: Metadata = { title: "The Wall" };
 
-export default function AgoraPage() {
+export default function TheWallPage() {
   return (
     <Upcoming
-      title="Agora"
+      title="The Wall"
       intro="L'espace où les participants partagent leurs projets et leurs idées avant l'événement. Le message le plus aimé gagne 3 minutes sur scène, le dimanche."
       opens="Ouverture le vendredi 20 novembre"
       facts={[

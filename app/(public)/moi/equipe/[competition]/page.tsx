@@ -8,7 +8,7 @@ import { TeamChoiceForm } from "@/components/forms/team-choice-form";
 import { Alert } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/field";
 import { Squares, StatusMarker } from "@/components/ui/markers";
-import { COMPETITIONS, DISCIPLINES, type Competition } from "@/lib/constants";
+import { COMPETITIONS, specialityLabel, type Competition } from "@/lib/constants";
 import { env } from "@/lib/env";
 import { myParticipations } from "@/lib/participant";
 import { currentPerson } from "@/lib/session";
@@ -18,8 +18,6 @@ import { getWindows } from "@/lib/windows";
 import { changeTeam, joinCompetition, leaveMyTeam, manageMember, renameTeam, withdrawCompetition } from "../actions";
 
 export const metadata: Metadata = { title: "Mon équipe" };
-
-const disciplineLabel = (v: string) => DISCIPLINES.find((d) => d.value === v)?.label ?? v;
 
 export default async function TeamPage({ params }: { params: Promise<{ competition: string }> }) {
   const { competition } = await params;
@@ -157,7 +155,7 @@ export default async function TeamPage({ params }: { params: Promise<{ competiti
                         {isMe && <span className="ml-2 font-normal text-graphite">(toi)</span>}
                       </p>
                       <p className="text-small text-graphite">
-                        {disciplineLabel(m.discipline)} · {m.institution}
+                        {m.specialities.map(specialityLabel).join(", ")} · {m.institution}
                         {isLead && <span className="ml-2 font-semibold text-jade">Chef d&apos;équipe</span>}
                         {m.person_status === "pending" && <span className="ml-2">· email non confirmé</span>}
                       </p>

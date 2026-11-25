@@ -6,7 +6,7 @@ import { ButtonLink } from "./ui/button";
 export const PUBLIC_NAV: NavItem[] = [
   { href: "/defi", label: "Défi médical" },
   { href: "/bioinfo", label: "Bioinformatique" },
-  { href: "/agora", label: "Agora" },
+  { href: "/the-wall", label: "The Wall" },
   { href: "/jeux", label: "Jeux" },
 ];
 

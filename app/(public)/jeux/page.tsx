@@ -20,7 +20,7 @@ export default function GamesPage() {
       <p>Tout le monde peut jouer. Pour figurer au classement des lots, saisis ton code participant, visible dans ton espace.</p>
       <p>Glycémie 24 h est un jeu, pas un conseil médical.</p>
       <p>
-        En attendant, quatre jeux d&apos;échauffement t&apos;attendent sur la{" "}
+        En attendant, cinq jeux d&apos;échauffement t&apos;attendent sur la{" "}
         <Link href="/#jeux" className="font-semibold text-emerald underline">
           page d&apos;accueil
         </Link>

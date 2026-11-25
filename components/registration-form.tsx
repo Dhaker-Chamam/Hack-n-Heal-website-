@@ -4,6 +4,8 @@ import Link from "next/link";
 import { startTransition, useActionState, useEffect, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import type { RegisterState } from "@/app/(public)/inscription/actions";
+import { MAX_SPECIALITIES } from "@/lib/constants";
+import { FACEBOOK_ERROR, normaliseFacebook } from "@/lib/social";
 import { Alert } from "./ui/alert";
 import { Button } from "./ui/button";
 import { Checkbox, Field, FieldError, describedBy } from "./ui/field";
@@ -17,7 +19,7 @@ export type RegistrationFormProps = {
   cvEnabled: boolean;
   institutions: readonly string[];
   levels: readonly string[];
-  disciplines: readonly { value: string; label: string }[];
+  specialities: readonly { value: string; label: string }[];
   skills: readonly string[];
 };
 
@@ -25,7 +27,7 @@ const STEPS = ["Compétition", "Profil", "Équipe", "Finaliser"] as const;
 
 const STEP_FIELDS: string[][] = [
   ["competitions"],
-  ["first_name", "last_name", "email", "phone", "institution", "institution_other", "study_level", "discipline", "skills", "link_url"],
+  ["first_name", "last_name", "email", "phone", "institution", "institution_other", "study_level", "specialities", "skills", "link_url", "facebook"],
   ["medical_mode", "medical_team_name", "medical_code", "medical_note", "bioinfo_mode", "bioinfo_team_name", "bioinfo_code", "bioinfo_note", "kaggle_username", "has_laptop"],
   ["cv", "cv_share", "internship", "photo_opt_out", "adult", "privacy"],
 ];
@@ -62,6 +64,7 @@ export function RegistrationForm(props: RegistrationFormProps) {
   const [modes, setModes] = useState<Partial<Record<Comp, string>>>({});
   const [institution, setInstitution] = useState("");
   const [skillCount, setSkillCount] = useState(0);
+  const [specialityCount, setSpecialityCount] = useState(0);
   const [hasCv, setHasCv] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -104,6 +107,7 @@ export function RegistrationForm(props: RegistrationFormProps) {
     setModes({ medical: String(fd.get("medical_mode") ?? ""), bioinfo: String(fd.get("bioinfo_mode") ?? "") });
     setInstitution(String(fd.get("institution") ?? ""));
     setSkillCount(fd.getAll("skills").length);
+    setSpecialityCount(fd.getAll("specialities").length);
   }
 
   function saveDraft() {
@@ -136,7 +140,8 @@ export function RegistrationForm(props: RegistrationFormProps) {
         errs.phone = "Numéro invalide. Exemple : 20 123 456 ou +216 20 123 456.";
       }
       if (val("institution") === "Autre établissement" && !val("institution_other")) errs.institution_other = "Précise ton établissement.";
-      if (!val("discipline")) errs.discipline = "Choisis ton profil principal.";
+      if (fd.getAll("specialities").length === 0) errs.specialities = "Choisis au moins une spécialité.";
+      if (val("facebook") && !normaliseFacebook(val("facebook"))) errs.facebook = FACEBOOK_ERROR;
       if (val("link_url") && !/^https:\/\/\S+\.\S+/.test(val("link_url"))) errs.link_url = "Le lien doit commencer par https://";
     }
 
@@ -392,21 +397,25 @@ export function RegistrationForm(props: RegistrationFormProps) {
           </Field>
         )}
 
-        <fieldset aria-describedby={describedBy("discipline", true, err("discipline"))}>
+        <fieldset aria-describedby={describedBy("specialities", true, err("specialities"))}>
           <legend className="font-semibold text-ink">Profil principal</legend>
-          <p id="discipline-hint" className="mt-0.5 text-small text-graphite">
-            Il sert à équilibrer les équipes : chacune réunit au moins un profil santé et un profil tech.
+          <p id="specialities-hint" className="mt-0.5 text-small text-graphite">
+            De 1 à {MAX_SPECIALITIES} spécialités. Elles servent à équilibrer les équipes : chacune réunit au moins un
+            profil santé et un profil tech. <span className="tabular">({specialityCount}/{MAX_SPECIALITIES})</span>
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
-            {props.disciplines.map((d) => (
+            {props.specialities.map((d) => (
               <label key={d.value}
                 className="cursor-pointer border border-graphite bg-white px-4 py-2.5 text-small font-semibold text-ink transition-colors duration-150 hover:border-jade has-checked:border-jade has-checked:bg-jade has-checked:text-white has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-emerald">
-                <input type="radio" name="discipline" value={d.value} className="sr-only" />
+                <input type="checkbox" name="specialities" value={d.value} className="sr-only"
+                  onChange={(e) => {
+                    if (e.currentTarget.checked && specialityCount >= MAX_SPECIALITIES) e.currentTarget.checked = false;
+                  }} />
                 {d.label}
               </label>
             ))}
           </div>
-          <FieldError id="discipline-error" message={err("discipline")} />
+          <FieldError id="specialities-error" message={err("specialities")} />
         </fieldset>
 
         <fieldset aria-describedby="skills-hint">
@@ -434,6 +443,11 @@ export function RegistrationForm(props: RegistrationFormProps) {
         <Field id="link_url" label="Lien LinkedIn ou GitHub" optional error={err("link_url")}>
           <input id="link_url" name="link_url" type="url" inputMode="url" className="control" placeholder="https://"
             aria-invalid={!!err("link_url") || undefined} aria-describedby={describedBy("link_url", false, err("link_url"))} />
+        </Field>
+
+        <Field id="facebook" label="Facebook (lien ou nom du profil)" optional error={err("facebook")}>
+          <input id="facebook" name="facebook" className="control" autoComplete="off" maxLength={200}
+            aria-invalid={!!err("facebook") || undefined} aria-describedby={describedBy("facebook", false, err("facebook"))} />
         </Field>
       </fieldset>
 

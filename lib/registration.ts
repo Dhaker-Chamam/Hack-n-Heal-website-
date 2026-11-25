@@ -40,7 +40,8 @@ export type Member = {
   person_id: string;
   first_name: string;
   last_name: string;
-  discipline: string;
+  specialities: string[];
+  skills: string[];
   institution: string;
   profile_kind: ProfileKind;
   person_status: "pending" | "confirmed";
@@ -50,12 +51,41 @@ export type Member = {
 /** Members holding a seat: active participation, person confirmed or pending for less than 72 h. */
 export async function teamMembers(tx: postgres.Sql | Tx, teamId: string): Promise<Member[]> {
   return tx<Member[]>`
-    select pa.id as participation_id, p.id as person_id, p.first_name, p.last_name, p.discipline,
+    select pa.id as participation_id, p.id as person_id, p.first_name, p.last_name, p.specialities, p.skills,
            p.institution, p.profile_kind, p.status as person_status, pa.joined_team_at
     from hnh.participation pa join hnh.person p on p.id = pa.person_id
     where pa.team_id = ${teamId} and pa.status = 'active'
       and (p.status = 'confirmed' or (p.status = 'pending' and p.created_at > now() - interval '72 hours'))
     order by pa.joined_team_at nulls last, pa.created_at`;
+}
+
+/**
+ * Creates a team with a fresh join code. The lead still has to be seated with seatInTeam.
+ * A name already taken in the competition throws a UserError carrying nameErrorCode.
+ */
+export async function insertTeam(
+  tx: Tx,
+  competition: Competition,
+  name: string,
+  leadParticipationId: string,
+  nameErrorCode?: string,
+): Promise<{ id: string; code: string }> {
+  const [clash] = await tx`
+    select 1 from hnh.team where competition = ${competition} and lower(name) = lower(${name})`;
+  if (clash) throw new UserError("Ce nom d'équipe est déjà pris. Choisis-en un autre.", nameErrorCode);
+  const code = await newJoinCode(tx, competition);
+  const [team] = await tx<{ id: string }[]>`
+    insert into hnh.team (competition, name, join_code, lead_participation_id)
+    values (${competition}, ${name}, ${code}, ${leadParticipationId}) returning id`;
+  return { id: team.id, code };
+}
+
+/** Gives participations their seat in a team and ends their search for one. */
+export async function seatInTeam(tx: Tx, teamId: string, participationIds: string[]) {
+  await tx`
+    update hnh.participation
+    set team_id = ${teamId}, seeking_team = false, seeking_note = null, joined_team_at = now()
+    where id in ${tx(participationIds)}`;
 }
 
 /**
@@ -83,18 +113,9 @@ export async function applyTeamChoice(
   }
 
   if (choice.mode === "create") {
-    const [clash] = await tx`
-      select 1 from hnh.team where competition = ${competition} and lower(name) = lower(${choice.teamName})`;
-    if (clash) throw new UserError("Ce nom d'équipe est déjà pris. Choisis-en un autre.", `FIELD:${prefix}_team_name`);
-    const code = await newJoinCode(tx, competition);
-    const [team] = await tx<{ id: string }[]>`
-      insert into hnh.team (competition, name, join_code, lead_participation_id)
-      values (${competition}, ${choice.teamName}, ${code}, ${participationId}) returning id`;
-    await tx`
-      update hnh.participation
-      set team_id = ${team.id}, seeking_team = false, seeking_note = null, joined_team_at = now()
-      where id = ${participationId}`;
-    return { teamId: team.id, teamName: choice.teamName, code };
+    const team = await insertTeam(tx, competition, choice.teamName, participationId, `FIELD:${prefix}_team_name`);
+    await seatInTeam(tx, team.id, [participationId]);
+    return { teamId: team.id, teamName: choice.teamName, code: team.code };
   }
 
   const code = normaliseJoinCode(choice.code);
@@ -125,10 +146,7 @@ export async function applyTeamChoice(
       `FIELD:${prefix}_code`,
     );
   }
-  await tx`
-    update hnh.participation
-    set team_id = ${team.id}, seeking_team = false, seeking_note = null, joined_team_at = now()
-    where id = ${participationId}`;
+  await seatInTeam(tx, team.id, [participationId]);
   return { teamId: team.id, teamName: team.name, code };
 }
 

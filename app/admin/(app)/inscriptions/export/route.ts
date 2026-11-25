@@ -1,7 +1,7 @@
 import { audit } from "@/lib/audit";
 import { listRegistrations } from "@/lib/admin-queries";
 import { csvResponse, toCsv } from "@/lib/csv";
-import { DISCIPLINES, PROFILE_KIND_LABEL } from "@/lib/constants";
+import { PROFILE_KIND_LABEL, specialityLabel } from "@/lib/constants";
 import { currentStaff } from "@/lib/session";
 import { tunisDay, tunisStamp } from "@/lib/time";
 
@@ -21,21 +21,22 @@ export async function GET(req: Request) {
     competition: (p.get("competition") as "medical") ?? undefined,
     status: p.get("status") ?? undefined,
     profile: p.get("profile") ?? undefined,
+    tag: p.getAll("tag"),
     sans_equipe: p.get("sans_equipe") ?? undefined,
   });
   await audit("staff", staff.id, "export.registrations", undefined, undefined, { rows: rows.length });
-  const label = (v: string) => DISCIPLINES.find((d) => d.value === v)?.label ?? v;
   const body = toCsv(
     [
       "code_participant", "prenom", "nom", "email", "telephone", "etablissement", "niveau", "profil", "type_profil",
       "statut", "medical", "equipe_medical", "code_medical", "bioinfo", "equipe_bioinfo", "code_bioinfo",
-      "kaggle", "ordinateur", "sans_photo", "offres_stage", "cv", "cv_partage", "inscrit_le", "confirme_le",
+      "kaggle", "ordinateur", "sans_photo", "offres_stage", "cv", "cv_partage", "inscrit_le", "confirme_le", "facebook",
     ],
     rows.map((r) => [
-      r.participant_code, r.first_name, r.last_name, r.email, r.phone, r.institution, r.study_level, label(r.discipline),
+      r.participant_code, r.first_name, r.last_name, r.email, r.phone, r.institution, r.study_level,
+      r.specialities.map(specialityLabel).join(" | "),
       PROFILE_KIND_LABEL[r.profile_kind], STATUS[r.status], r.medical_in, r.medical_team, r.medical_code, r.bioinfo_in,
       r.bioinfo_team, r.bioinfo_code, r.kaggle_username, r.has_laptop, r.photo_opt_out, r.internship_offers_opt_in,
-      r.has_cv, r.cv_share_opt_in, tunisStamp(r.created_at), tunisStamp(r.email_confirmed_at),
+      r.has_cv, r.cv_share_opt_in, tunisStamp(r.created_at), tunisStamp(r.email_confirmed_at), r.facebook,
     ]),
   );
   return csvResponse(`hacknheal-inscriptions-${tunisDay()}.csv`, body);
