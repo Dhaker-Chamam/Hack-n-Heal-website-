@@ -30,7 +30,7 @@ Without `SMTP_HOST`, emails are not sent: they are stored in the outbox and prin
 
 - Organiser login: `/admin/connexion` with an address listed in `ADMIN_EMAILS` (it becomes an admin on first request).
 - `npm run db:local -- reset` wipes the local database.
-- `npm test` runs the unit tests (team rules, deadlines, CSV, Facebook links, radar data, migration 0002 on a database with old rows).
+- `npm test` runs the unit tests (team rules, deadlines, CSV, Facebook links, radar data, the rules and emails of The Wall, migration 0002 on a database with old rows).
 - If styles look stale in `next dev` after editing `app/globals.css`, stop the server and delete `.next/`.
 
 ## Production setup
@@ -52,6 +52,10 @@ Without `SMTP_HOST`, emails are not sent: they are stored in the outbox and prin
 
 ## Not built yet
 
-Agora (M2, Fri 20 Nov), challenge page, medical submission and Kaggle page (M3, Thu 26 Nov), games, check-in scanner, badges and jury (M4, Mon 30 Nov). Their public pages already exist as "opens on…" pages so the navigation never leads to a 404.
+Challenge page, medical submission and Kaggle page (M3, due before Sat 28 Nov 10:00), games, check-in scanner, badges and jury (M4, Mon 30 Nov). Their public pages already exist as "opens on…" pages so the navigation never leads to a 404.
+
+## The Wall
+
+Built on 25 Nov. Confirmed participants write up to 3 posts at `/the-wall/publier`; nothing is public until a moderator approves it at `/admin/the-wall` (admins and moderators; the dashboard shows how many are waiting). Anyone can like without an account: one like per post per browser, a signed cookie. Likes beyond 5 an hour from one network on one post, or 3 a day from one device, are held and not counted until a moderator counts or cancels them in the "Votes" tab. Three reports hide a post until it is reviewed. When the vote window closes the page turns into the ranking, and an admin confirms the winner from the "Votes" tab. The limits are in `lib/wall.ts`. Cloudflare Turnstile is not wired in.
 
 See `DESIGN.md` for the design system and `PRODUCT.md` for the product brief.

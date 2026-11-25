@@ -2,10 +2,11 @@ import "server-only";
 import { cookies } from "next/headers";
 import { db } from "./db";
 import { env } from "./env";
-import { tokenHash } from "./crypto";
+import { hmac, safeEqual, tokenHash } from "./crypto";
 
 export const PARTICIPANT_COOKIE = "hnh_p";
 export const STAFF_COOKIE = "hnh_s";
+export const VOTER_COOKIE = "hnh_v";
 
 const baseCookie = {
   httpOnly: true,
@@ -63,6 +64,26 @@ export async function currentPerson(): Promise<Person | null> {
   const token = (await cookies()).get(PARTICIPANT_COOKIE)?.value;
   if (!token) return null;
   return personByToken(token);
+}
+
+// ------------------------------------------------------------------ voters on The Wall
+
+const voterSignature = (id: string) => hmac(`voter:${id}`);
+
+/** The anonymous voter id of this browser, when it carries a cookie we signed. */
+export async function voterId(): Promise<string | null> {
+  const [id, signature] = ((await cookies()).get(VOTER_COOKIE)?.value ?? "").split(".");
+  if (!id || !signature || !/^[0-9a-f-]{36}$/.test(id)) return null;
+  return safeEqual(signature, voterSignature(id)) ? id : null;
+}
+
+/** Same, giving the browser an id on its first vote. Only inside a server action or a route handler. */
+export async function ensureVoterId(): Promise<string> {
+  const existing = await voterId();
+  if (existing) return existing;
+  const id = crypto.randomUUID();
+  (await cookies()).set(VOTER_COOKIE, `${id}.${voterSignature(id)}`, { ...baseCookie, maxAge: 60 * 60 * 24 * 60 });
+  return id;
 }
 
 // ------------------------------------------------------------------ staff

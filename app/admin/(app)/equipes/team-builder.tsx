@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { startTransition, useActionState, useState } from "react";
 import { Lock } from "lucide-react";
 import type { FormState } from "@/app/(public)/moi/actions";
 import { RadarChart, RadarLegend } from "@/components/admin/radar-chart";
@@ -200,7 +200,15 @@ function FreePeople({
           </div>
           <Composition competition={competition} people={preview} />
 
-          <form action={formAction} className="mt-6 grid gap-5 border-t border-jade/15 pt-5">
+          <form
+            onSubmit={(e) => {
+              // sent by hand: with action={...} React resets the form afterwards, and ticked boxes look unticked
+              e.preventDefault();
+              const data = new FormData(e.currentTarget);
+              startTransition(() => formAction(data));
+            }}
+            className="mt-6 grid gap-5 border-t border-jade/15 pt-5"
+          >
             {selected.map((p) => (
               <input key={p.participation_id} type="hidden" name="members" value={p.participation_id} />
             ))}

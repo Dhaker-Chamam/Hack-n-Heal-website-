@@ -80,6 +80,9 @@ export const TEMPLATE_LABEL: Record<string, string> = {
   staff_login: "Connexion organisateur",
   teammate_joined: "Nouveau membre d'équipe",
   team_placed: "Placement dans une équipe",
+  wall_published: "The Wall : message publié",
+  wall_changes: "The Wall : modifications demandées",
+  wall_winner: "The Wall : message gagnant",
 };
 
 export const MAIL_STATUS_LABEL: Record<string, string> = {
@@ -94,6 +97,8 @@ export const link = {
   staffLogin: (token: string) => `${env.appUrl}/admin/acces/${token}`,
   resend: () => `${env.appUrl}/lien`,
   team: (competition: Competition) => `${env.appUrl}/moi/equipe/${competition}`,
+  wallPost: (postId: string) => `${env.appUrl}/the-wall/${postId}`,
+  wallPublish: () => `${env.appUrl}/the-wall/publier`,
 };
 
 // ------------------------------------------------------------------ templates
@@ -194,6 +199,46 @@ export function teamPlacedEmail(
       p(missing ? `Il manque encore ${missing}.` : "L'équipe est complète et équilibrée."),
       button("Voir mon équipe", link.team(competition)),
       p("Si la page te demande ton adresse email, saisis-la pour recevoir un nouveau lien personnel."),
+    ]),
+  };
+}
+
+// ------------------------------------------------------------------ The Wall
+
+export function wallPublishedEmail(firstName: string, postId: string, votesUntil: string) {
+  return {
+    subject: "Ton message est en ligne sur The Wall",
+    ...layout(`${firstName}, ton message est publié`, [
+      p("Un modérateur a relu ton message : il est maintenant visible sur The Wall."),
+      p(
+        `Partage son lien : tout le monde peut l'aimer sans compte${votesUntil ? `, jusqu'au ${votesUntil}` : ""}. Le message le plus aimé donne à son auteur·e 3 minutes sur scène, le dimanche 6 décembre.`,
+      ),
+      button("Voir et partager mon message", link.wallPost(postId)),
+    ]),
+  };
+}
+
+export function wallChangesEmail(firstName: string, reason: string) {
+  return {
+    subject: "The Wall : ton message est à corriger",
+    ...layout(`${firstName}, ton message n'est pas encore publié`, [
+      p("Un modérateur a relu ton message et te demande de le modifier avant publication :"),
+      p(`« ${reason} »`),
+      p("Corrige-le depuis la page de publication : il repartira en relecture."),
+      button("Corriger mon message", link.wallPublish()),
+      p("Si la page te demande ton adresse email, saisis-la pour recevoir un nouveau lien personnel."),
+    ]),
+  };
+}
+
+export function wallWinnerEmail(firstName: string, postId: string) {
+  return {
+    subject: "Ton message a gagné sur The Wall",
+    ...layout(`Bravo ${firstName}`, [
+      p("Ton message est le plus aimé de The Wall, et les organisateurs ont validé les votes."),
+      p("Tu gagnes 3 minutes sur scène le dimanche 6 décembre, avant la remise des prix."),
+      p("Réponds à cet email avant le samedi 5 décembre à 12:00 pour confirmer ta présence. Sans réponse, la place revient au message suivant."),
+      button("Voir mon message", link.wallPost(postId)),
     ]),
   };
 }

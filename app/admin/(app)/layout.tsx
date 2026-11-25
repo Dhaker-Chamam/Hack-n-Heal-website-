@@ -13,6 +13,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     { href: "/admin", label: "Tableau de bord", roles: ["admin", "moderator", "checkin"] },
     { href: "/admin/inscriptions", label: "Inscriptions", roles: ["admin"] },
     { href: "/admin/equipes", label: "Équipes", roles: ["admin", "moderator"] },
+    { href: "/admin/the-wall", label: "The Wall", roles: ["admin", "moderator"] },
     { href: "/admin/calendrier", label: "Calendrier", roles: ["admin"] },
     { href: "/admin/emails", label: "Emails", roles: ["admin"] },
     { href: "/admin/organisateurs", label: "Organisateurs", roles: ["admin"] },

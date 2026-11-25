@@ -1,5 +1,6 @@
 import "server-only";
 import { db } from "./db";
+import { formatDeadline } from "./time";
 
 export type WindowKey =
   | "reg_medical"
@@ -40,4 +41,17 @@ export async function getWindow(key: WindowKey): Promise<TimeWindow> {
 /** True when the window has not opened yet (and is not forced open). */
 export function notYetOpen(w: TimeWindow): boolean {
   return !w.is_open && w.manual_state === "auto" && w.opens_at !== null && w.opens_at.getTime() > Date.now();
+}
+
+/** True when the window was open and no longer is. */
+export function hasClosed(w: TimeWindow): boolean {
+  return !w.is_open && !notYetOpen(w);
+}
+
+/**
+ * " depuis le jeudi 3 décembre à 20:00" once the closing time has passed.
+ * Empty when an organiser closed the window by hand before that time: the date would be wrong.
+ */
+export function closedSince(w: TimeWindow): string {
+  return w.closes_at && w.closes_at.getTime() <= Date.now() ? ` depuis le ${formatDeadline(w.closes_at)}` : "";
 }

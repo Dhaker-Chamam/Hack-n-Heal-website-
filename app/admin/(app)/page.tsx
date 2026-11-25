@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { teamsWithKinds } from "@/lib/participant";
 import { teamBalance } from "@/lib/teams";
 import { formatDeadline, formatMoment } from "@/lib/time";
+import { wallQueue } from "@/lib/wall-queries";
 import { getWindows } from "@/lib/windows";
 
 export default async function Dashboard({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
@@ -14,7 +15,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   const { refus } = await searchParams;
   const sql = db();
 
-  const [counts, teams, windows, mail, people] = await Promise.all([
+  const [counts, teams, windows, mail, people, wall] = await Promise.all([
     sql<{ competition: Competition; status: string; seeking: number; n: number }[]>`
       select pa.competition, p.status, count(*) filter (where pa.team_id is null)::int as seeking, count(*)::int as n
       from hnh.participation pa join hnh.person p on p.id = pa.person_id
@@ -23,6 +24,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
     getWindows(),
     sql<{ status: string; n: number }[]>`select status, count(*)::int as n from hnh.email_outbox group by 1`,
     sql<{ status: string; n: number }[]>`select status, count(*)::int as n from hnh.person group by 1`,
+    wallQueue(),
   ]);
 
   const balance: Record<Competition, { total: number; complete: number }> = {
@@ -49,6 +51,21 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
       </div>
 
       {refus && <Alert tone="error" title="Ton rôle ne donne pas accès à cette page." />}
+      {staff.role !== "checkin" && wall.pending + wall.reported > 0 && (
+        <Alert
+          tone="info"
+          title={[
+            wall.pending > 0 ? `${wall.pending} message${wall.pending > 1 ? "s" : ""} à relire sur The Wall` : "",
+            wall.reported > 0 ? `${wall.reported} message${wall.reported > 1 ? "s signalés" : " signalé"}` : "",
+          ]
+            .filter(Boolean)
+            .join(" · ")}
+        >
+          <Link href={wall.pending > 0 ? "/admin/the-wall" : "/admin/the-wall?vue=signalements"} className="font-semibold text-emerald underline">
+            Ouvrir la modération
+          </Link>
+        </Alert>
+      )}
       {staff.role === "admin" && failed > 0 && (
         <Alert tone="error" title={`${failed} email${failed > 1 ? "s" : ""} en échec.`}>
           <Link href="/admin/emails?statut=failed" className="font-semibold text-emerald underline">

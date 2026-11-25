@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: "Règlement" };
 
 export default function RulesPage() {
   return (
-    <Prose title="Règlement de Hack'n'Heal 2026" updated="16 novembre 2026">
+    <Prose title="Règlement de Hack'n'Heal 2026" updated="25 novembre 2026">
       <Section id="general" title="Participation">
         <ul>
           <li>Hack&apos;n&apos;Heal 2026 a lieu les samedi 5 et dimanche 6 décembre 2026 à l&apos;INSAT, Centre Urbain Nord, Tunis.</li>
@@ -20,7 +20,11 @@ export default function RulesPage() {
       <Section id="equipes" title="Équipes">
         <ul>
           <li>Hackathon médical : 4 à 7 membres. Hackathon bioinformatique : 2 à 4 membres.</li>
-          <li>Chaque équipe réunit au moins un profil santé (médecine, pharmacie, biologie) et un profil tech (informatique, data et IA). Un profil bioinformatique compte pour l&apos;un ou l&apos;autre.</li>
+          <li>
+            Chaque équipe réunit au moins un profil santé (médecine, pharmacie, biologie, chimie) et un profil tech (développement,
+            IA et data). Une personne en bioinformatique, ou dont les spécialités relèvent des deux côtés, compte pour l&apos;un ou
+            l&apos;autre, mais pas pour les deux à elle seule.
+          </li>
           <li>Les équipes médicales sont verrouillées le vendredi 27 novembre à 23:59, les équipes bioinformatiques le mercredi 2 décembre à 23:59.</li>
           <li>À la clôture, les organisateurs peuvent compléter, fusionner ou recomposer les équipes incomplètes et y placer les participant·e·s sans équipe.</li>
         </ul>
@@ -67,7 +71,11 @@ export default function RulesPage() {
             mercredi 2 décembre à 23:59.
           </li>
           <li>Chaque message est relu par un modérateur avant publication. Sont refusés : données de patients, affirmations médicales sans source, promesses de guérison, publicité, harcèlement.</li>
-          <li>Tout le monde peut aimer un message, une fois par message et par navigateur, jusqu&apos;au <strong>jeudi 3 décembre à 20:00</strong>.</li>
+          <li>
+            Tout le monde peut aimer un message, une fois par message et par navigateur, jusqu&apos;au{" "}
+            <strong>jeudi 3 décembre à 20:00</strong>. Chaque message peut être signalé ; au bout de 3 signalements, il est masqué
+            jusqu&apos;à sa relecture.
+          </li>
           <li>
             L&apos;auteur·e du message le plus aimé obtient 3 minutes sur scène le dimanche, avant la remise des prix. Les organisateurs
             vérifient les votes : les mentions « j&apos;aime » frauduleuses (comptes multiples, scripts, achats) sont annulées et
