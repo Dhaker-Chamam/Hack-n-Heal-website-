@@ -83,6 +83,7 @@ const schema = z
       .refine((s) => !s || normaliseFacebook(s) !== null, FACEBOOK_ERROR),
     kaggle_username: z.string().trim().max(60).optional(),
     has_laptop: z.boolean(),
+    mixed_team: z.enum(["oui", "non"], { error: "Réponds à cette question." }),
     adult: z.literal(true, { error: "Tu dois avoir 18 ans ou plus pour participer." }),
     privacy: z.literal(true, { error: "Tu dois accepter le règlement et la politique de données." }),
     cv_share: z.boolean(),
@@ -134,6 +135,7 @@ export async function register(_prev: RegisterState, form: FormData): Promise<Re
     facebook: form.get("facebook") ?? "",
     kaggle_username: form.get("kaggle_username") || undefined,
     has_laptop: bool("has_laptop"),
+    mixed_team: form.get("mixed_team") ?? undefined,
     adult: bool("adult"),
     privacy: bool("privacy"),
     cv_share: bool("cv_share"),
@@ -214,11 +216,11 @@ export async function register(_prev: RegisterState, form: FormData): Promise<Re
       const code = await newParticipantCode(tx);
       await tx`
         insert into hnh.person (id, email, first_name, last_name, phone, institution, study_level, specialities,
-          profile_kind, skills, link_url, facebook, facebook_kind, photo_opt_out, internship_offers_opt_in,
+          profile_kind, skills, link_url, facebook, facebook_kind, photo_opt_out, mixed_team_ok, internship_offers_opt_in,
           cv_share_opt_in, access_token_hash, participant_code)
         values (${personId}, ${v.email}, ${v.first_name}, ${v.last_name}, ${v.phone}, ${institution}, ${v.study_level},
           ${v.specialities}, ${profileKindOf(v.specialities)}, ${v.skills}, ${v.link_url || null},
-          ${facebook?.value ?? null}, ${facebook?.kind ?? null}, ${v.photo_opt_out},
+          ${facebook?.value ?? null}, ${facebook?.kind ?? null}, ${v.photo_opt_out}, ${v.mixed_team === "oui"},
           ${v.internship}, false, ${tokenHash(token)}, ${code})`;
 
       for (const c of v.competitions) {
@@ -234,6 +236,7 @@ export async function register(_prev: RegisterState, form: FormData): Promise<Re
         { kind: "privacy", granted: true },
         { kind: "internship", granted: v.internship },
         { kind: "photo_opt_out", granted: v.photo_opt_out },
+        { kind: "mixed_team", granted: v.mixed_team === "oui" },
       ]);
     });
   } catch (e) {

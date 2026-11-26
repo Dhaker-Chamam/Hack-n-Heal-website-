@@ -119,7 +119,7 @@ export const SKILL_GROUPS = [
 ] as const satisfies readonly { label: string; skills: readonly (typeof SKILLS)[number][] }[];
 
 // The date shown on /confidentialite: change both together.
-export const CONSENT_VERSION = "2026-11-25";
+export const CONSENT_VERSION = "2026-11-26";
 
 export const AGORA_CATEGORIES = {
   projet: "Projet",

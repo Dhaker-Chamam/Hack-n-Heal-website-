@@ -10,10 +10,11 @@ export type RegistrationRow = {
   email: string;
   phone: string | null;
   institution: string;
-  study_level: string;
+  study_level: string | null;
   specialities: string[];
   profile_kind: ProfileKind;
   facebook: string | null;
+  mixed_team_ok: boolean | null;
   status: "pending" | "confirmed" | "cancelled" | "rejected";
   photo_opt_out: boolean;
   internship_offers_opt_in: boolean;
@@ -60,7 +61,7 @@ export async function listRegistrations(f: RegistrationFilters, limit = 5000): P
 
   return sql<RegistrationRow[]>`
     select p.id, p.participant_code, p.first_name, p.last_name, p.email, p.phone, p.institution, p.study_level,
-           p.specialities, p.profile_kind, p.facebook, p.status, p.photo_opt_out, p.internship_offers_opt_in,
+           p.specialities, p.profile_kind, p.facebook, p.mixed_team_ok, p.status, p.photo_opt_out, p.internship_offers_opt_in,
            (p.cv_path is not null) as has_cv, p.cv_share_opt_in, p.created_at, p.email_confirmed_at,
            tm.name as medical_team, tm.join_code as medical_code, (pm.id is not null) as medical_in,
            tb.name as bioinfo_team, tb.join_code as bioinfo_code, (pb.id is not null) as bioinfo_in,
@@ -96,6 +97,8 @@ export type BuilderPerson = {
   person_status: "pending" | "confirmed";
   seeking_team: boolean;
   seeking_note: string | null;
+  /** false = refuses a team mixing health and tech; null = never asked */
+  mixed_team_ok: boolean | null;
 };
 
 export type BuilderTeam = {
@@ -122,7 +125,8 @@ export async function teamBuilderData(competition: Competition): Promise<{ teams
       order by lower(t.name)`,
     sql<BuilderPerson[]>`
       select pa.id as participation_id, p.id as person_id, pa.team_id, p.first_name, p.last_name, p.institution,
-             p.specialities, p.skills, p.profile_kind, p.status as person_status, pa.seeking_team, pa.seeking_note
+             p.specialities, p.skills, p.profile_kind, p.status as person_status, pa.seeking_team, pa.seeking_note,
+             p.mixed_team_ok
       from hnh.participation pa join hnh.person p on p.id = pa.person_id
       where pa.competition = ${competition} and pa.status = 'active'
         and (p.status = 'confirmed' or (p.status = 'pending' and p.created_at > now() - interval '72 hours'))

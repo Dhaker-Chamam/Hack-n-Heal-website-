@@ -150,7 +150,7 @@ export async function applyTeamChoice(
   return { teamId: team.id, teamName: team.name, code };
 }
 
-export type ConsentKind = "privacy" | "adult" | "cv_share" | "internship" | "photo_opt_out" | "agora_display";
+export type ConsentKind = "privacy" | "adult" | "cv_share" | "internship" | "photo_opt_out" | "agora_display" | "mixed_team";
 
 export async function recordConsents(tx: Tx, personId: string, consents: { kind: ConsentKind; granted: boolean }[]) {
   for (const c of consents) {

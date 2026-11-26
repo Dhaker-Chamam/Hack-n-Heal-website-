@@ -33,6 +33,8 @@ export default async function MePage({ searchParams }: { searchParams: Promise<R
     qrSvg(qrPayload(person.id)),
   ]);
   const cancelled = person.status === "cancelled";
+  // false for an author of The Wall who takes part in no hackathon: no QR code, no team question
+  const inHackathon = Object.keys(parts).length > 0;
 
   return (
     <>
@@ -77,6 +79,7 @@ export default async function MePage({ searchParams }: { searchParams: Promise<R
             </div>
           </section>
 
+          {inHackathon ? (
           <section aria-labelledby="qr-title" className="lg:row-span-2">
             <h2 id="qr-title" className="t-subhead">
               Mon QR code d&apos;accueil
@@ -100,6 +103,19 @@ export default async function MePage({ searchParams }: { searchParams: Promise<R
               </a>
             </div>
           </section>
+          ) : (
+            <section aria-labelledby="wall-title" className="lg:row-span-2">
+              <h2 id="wall-title" className="t-subhead">
+                The Wall
+              </h2>
+              <div className="mt-4 border border-jade/15 bg-white p-5">
+                <p className="text-ink">Tu peux publier sur The Wall sans participer à un hackathon.</p>
+                <Link href="/the-wall/publier" className={buttonClass("secondary", "sm", "mt-4 w-full")}>
+                  Publier ou voir mes messages
+                </Link>
+              </div>
+            </section>
+          )}
 
           <div className="grid min-w-0 gap-14">
             <section aria-labelledby="profile-title" className="border-t border-jade/15 pt-8">
@@ -117,7 +133,7 @@ export default async function MePage({ searchParams }: { searchParams: Promise<R
                     last_name: person.last_name,
                     phone: person.phone ?? "",
                     institution: person.institution,
-                    study_level: person.study_level,
+                    study_level: person.study_level ?? "",
                     specialities: person.specialities,
                     skills: person.skills,
                     link_url: person.link_url ?? "",
@@ -183,6 +199,25 @@ export default async function MePage({ searchParams }: { searchParams: Promise<R
                     <Checkbox name="photo_opt_out" id="pref_photo" defaultChecked={person.photo_opt_out}>
                       Ne pas apparaître sur les photos et vidéos de l&apos;événement.
                     </Checkbox>
+                    {inHackathon && (
+                      <fieldset className="mt-4">
+                        <legend className="font-semibold text-ink">Acceptes-tu de faire partie d&apos;une équipe mixte ?</legend>
+                        <p className="mt-0.5 text-small text-graphite">Une équipe mixte réunit des profils santé et tech : médecine, pharmacie, biologie, informatique, IA et data…</p>
+                        <div className="mt-2 flex flex-wrap gap-x-8 gap-y-1">
+                          {(
+                            [
+                              ["oui", "Oui", true],
+                              ["non", "Non", false],
+                            ] as const
+                          ).map(([value, label, answer]) => (
+                            <label key={value} className="flex cursor-pointer items-center gap-2.5 py-1 text-ink">
+                              <input type="radio" name="mixed_team" value={value} defaultChecked={person.mixed_team_ok === answer} className="size-5 cursor-pointer" />
+                              {label}
+                            </label>
+                          ))}
+                        </div>
+                      </fieldset>
+                    )}
                   </div>
                 </SimpleActionForm>
               </div>

@@ -30,12 +30,12 @@ Without `SMTP_HOST`, emails are not sent: they are stored in the outbox and prin
 
 - Organiser login: `/admin/connexion` with an address listed in `ADMIN_EMAILS` (it becomes an admin on first request).
 - `npm run db:local -- reset` wipes the local database.
-- `npm test` runs the unit tests (team rules, deadlines, CSV, Facebook links, radar data, the rules and emails of The Wall, migration 0002 on a database with old rows).
+- `npm test` runs the unit tests (team rules, deadlines, CSV, Facebook links, radar data, the rules and emails of The Wall, migrations 0002 and 0003 on a database with old rows).
 - If styles look stale in `next dev` after editing `app/globals.css`, stop the server and delete `.next/`.
 
 ## Production setup
 
-1. **Supabase**: project `ytrxmjssqdcxuorsmxyu` in organization "insat", region eu-west-1 (Ireland). Already set up on 16 Nov 2026: schema applied, `hnh_app` password set, private `cvs` bucket created; the values are in the git-ignored `.env.supabase.local`. For a new project, apply the files in `supabase/migrations/` in order. `0002` is safe to run again: on a live database, run it, deploy, then run it once more (it gives specialities to people registered by the old code in between). The first file creates schema `hnh` (not exposed to the REST API) and role `hnh_app` without login. Give that role a password out of band, never in git:
+1. **Supabase**: project `ytrxmjssqdcxuorsmxyu` in organization "insat", region eu-west-1 (Ireland). Already set up on 16 Nov 2026: schema applied, `hnh_app` password set, private `cvs` bucket created; the values are in the git-ignored `.env.supabase.local`. For a new project, apply the files in `supabase/migrations/` in order. `0002` is safe to run again: on a live database, run it, deploy, then run it once more (it gives specialities to people registered by the old code in between). `0003` also sets three calendar dates, so run it once only: a later run would undo a date changed since in `/admin/calendrier`. The first file creates schema `hnh` (not exposed to the REST API) and role `hnh_app` without login. Give that role a password out of band, never in git:
    `alter role hnh_app login password '<random>';`
    Then `DATABASE_URL=postgres://hnh_app.<project-ref>:<password>@aws-1-eu-west-1.pooler.supabase.com:6543/postgres?sslmode=require`.
 2. **CV storage** (optional): create a private bucket `cvs` and set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`. Without them, the CV field is hidden.
@@ -56,6 +56,6 @@ Challenge page, medical submission and Kaggle page (M3, due before Sat 28 Nov 10
 
 ## The Wall
 
-Built on 25 Nov. Confirmed participants write up to 3 posts at `/the-wall/publier`; nothing is public until a moderator approves it at `/admin/the-wall` (admins and moderators; the dashboard shows how many are waiting). Anyone can like without an account: one like per post per browser, a signed cookie. Likes beyond 5 an hour from one network on one post, or 3 a day from one device, are held and not counted until a moderator counts or cancels them in the "Votes" tab. Three reports hide a post until it is reviewed. When the vote window closes the page turns into the ranking, and an admin confirms the winner from the "Votes" tab. The limits are in `lib/wall.ts`. Cloudflare Turnstile is not wired in.
+Built on 25 Nov, opened on 26 Nov to people who take part in no hackathon: they give a name, an email and an institution at `/the-wall/publier`, confirm with the emailed link, and exist as a person with no participation (no QR code, no team). Every confirmed person writes up to 3 posts at `/the-wall/publier`, each with up to 4 co-author names shown as typed; nothing is public until a moderator approves it at `/admin/the-wall` (admins and moderators; the dashboard shows how many are waiting). Anyone can like without an account: one like per post per browser, a signed cookie. Likes beyond 5 an hour from one network on one post, or 3 a day from one device, are held and not counted until a moderator counts or cancels them in the "Votes" tab. Three reports hide a post until it is reviewed. When the vote window closes the page turns into the ranking, and an admin confirms the winner from the "Votes" tab. The limits are in `lib/wall.ts`. Cloudflare Turnstile is not wired in.
 
 See `DESIGN.md` for the design system and `PRODUCT.md` for the product brief.

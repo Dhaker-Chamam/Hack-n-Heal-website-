@@ -126,6 +126,7 @@ function ModerationCard({ post }: { post: ModerationPost }) {
         </span>{" "}
         · {post.email} · {post.institution}
         <span className="block">Affiché comme : {authorLabel(post.first_name, post.last_name, post.institution)}</span>
+        {post.coauthors.length > 0 && <span className="block">Co-auteur·e·s affichés : {post.coauthors.join(", ")}</span>}
         {post.agora_blocked && <span className="block font-semibold text-danger">Auteur suspendu</span>}
       </p>
 

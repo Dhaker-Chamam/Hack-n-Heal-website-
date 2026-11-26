@@ -2,13 +2,16 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 import { z } from "zod";
 import { audit } from "@/lib/audit";
 import { AGORA_CATEGORIES } from "@/lib/constants";
-import { pseudo } from "@/lib/crypto";
+import { newToken, pseudo, tokenHash } from "@/lib/crypto";
 import { db, UserError } from "@/lib/db";
+import { sendMail } from "@/lib/email";
+import { wallConfirmEmail } from "@/lib/emails";
 import { rateLimit } from "@/lib/ratelimit";
-import { assertWindow, recordConsents } from "@/lib/registration";
+import { assertWindow, newParticipantCode, recordConsents } from "@/lib/registration";
 import { clientIp, deviceHash, ipHash } from "@/lib/request";
 import { currentPerson, ensureVoterId, type Person } from "@/lib/session";
 import {
@@ -16,10 +19,13 @@ import {
   REPORT_REASONS,
   WALL_BODY_MAX,
   WALL_BODY_MIN,
+  WALL_COAUTHOR_MAX,
+  WALL_MAX_COAUTHORS,
   WALL_MAX_POSTS,
   WALL_POST_INTERVAL,
   WALL_REPORTS_TO_HIDE,
   likeStatus,
+  parseCoauthors,
   textLength,
 } from "@/lib/wall";
 import { recountLikes } from "@/lib/wall-queries";
@@ -40,6 +46,77 @@ function toState(e: unknown): FormState {
   return { ok: false, errors: {}, message: "Une erreur technique est survenue. Réessaie dans un instant." };
 }
 
+const EMAIL_KNOWN = "Cette adresse est déjà inscrite. Demande ton lien personnel ci-dessous, ouvre-le, puis reviens sur cette page.";
+
+const joinSchema = z.object({
+  first_name: z.string().trim().min(1, REQUIRED).max(60),
+  last_name: z.string().trim().min(1, REQUIRED).max(60),
+  email: z.email("Adresse email invalide.").trim().toLowerCase().max(160),
+  institution: z.string().trim().min(2, REQUIRED).max(120),
+  adult: z.literal(true, { error: "Tu dois avoir 18 ans ou plus pour publier." }),
+  privacy: z.literal(true, { error: "Tu dois accepter le règlement et la politique de données." }),
+});
+
+/**
+ * Lets someone who takes part in no hackathon publish on The Wall: a person with no participation,
+ * who confirms their address with the emailed link like any registration.
+ */
+export async function joinWall(_prev: FormState, form: FormData): Promise<FormState> {
+  const text = (k: string) => form.get(k) ?? undefined;
+  const parsed = joinSchema.safeParse({
+    first_name: text("first_name"),
+    last_name: text("last_name"),
+    email: text("email"),
+    institution: text("institution"),
+    adult: form.get("adult") === "on",
+    privacy: form.get("privacy") === "on",
+  });
+  if (!parsed.success) {
+    const errors: Record<string, string> = {};
+    for (const issue of parsed.error.issues) errors[String(issue.path[0] ?? "form")] ??= issue.message;
+    return { ok: false, errors, message: "Certains champs sont à corriger." };
+  }
+  const v = parsed.data;
+  // the same allowance as a registration: 5 an hour per network, 3 a day per address
+  if (!(await rateLimit(`register:ip:${await ipHash()}`, 5, 3600)) || !(await rateLimit(`register:email:${v.email}`, 3, 86400))) {
+    return { ok: false, errors: {}, message: "Trop de tentatives depuis cette connexion. Réessaie dans une heure ou écris aux organisateurs." };
+  }
+
+  const token = newToken();
+  let personId: string;
+  try {
+    personId = await db().begin(async (tx) => {
+      await assertWindow(tx, "agora_post", POST_CLOSED);
+      const [known] = await tx`select 1 from hnh.person where lower(email) = ${v.email}`;
+      if (known) throw new UserError(EMAIL_KNOWN, "FIELD:email");
+      const code = await newParticipantCode(tx);
+      const [person] = await tx<{ id: string }[]>`
+        insert into hnh.person (email, first_name, last_name, institution, profile_kind, access_token_hash, participant_code)
+        values (${v.email}, ${v.first_name}, ${v.last_name}, ${v.institution}, 'other', ${tokenHash(token)}, ${code})
+        returning id`;
+      await recordConsents(tx, person.id, [
+        { kind: "adult", granted: true },
+        { kind: "privacy", granted: true },
+      ]);
+      return person.id;
+    });
+  } catch (e) {
+    const duplicate = typeof e === "object" && e !== null && "code" in e && (e as { code: string }).code === "23505";
+    if (duplicate || (e instanceof UserError && e.code === "FIELD:email")) {
+      return { ok: false, errors: { email: "Cette adresse est déjà inscrite." }, message: EMAIL_KNOWN };
+    }
+    return toState(e);
+  }
+  await audit("participant", personId, "wall.join", "person", personId);
+  const mail = wallConfirmEmail(v.first_name, token);
+  after(() => sendMail({ personId, to: v.email, template: "confirm", ...mail }));
+  return {
+    ok: true,
+    errors: {},
+    message: `Email envoyé à ${v.email}. Clique sur le lien qu'il contient pour confirmer ton adresse, puis écris ton message.`,
+  };
+}
+
 const postSchema = z.object({
   category: z.enum(Object.keys(AGORA_CATEGORIES) as [string, ...string[]], { error: "Choisis une catégorie." }),
   body: z
@@ -51,6 +128,15 @@ const postSchema = z.object({
     z.literal(""),
     z.url({ protocol: /^https$/, error: "Le lien doit commencer par https://" }).max(300, "Ce lien est trop long."),
   ]),
+  coauthors: z
+    .string()
+    .max(400, "Cette liste est trop longue.")
+    .transform(parseCoauthors)
+    .refine((names) => names.length <= WALL_MAX_COAUTHORS, `${WALL_MAX_COAUTHORS} co-auteur·e·s au maximum.`)
+    .refine(
+      (names) => names.every((name) => textLength(name) >= 2 && textLength(name) <= WALL_COAUTHOR_MAX),
+      `Chaque nom fait entre 2 et ${WALL_COAUTHOR_MAX} caractères.`,
+    ),
 });
 
 function parsePost(form: FormData) {
@@ -58,6 +144,7 @@ function parsePost(form: FormData) {
     category: form.get("category") ?? undefined,
     body: form.get("body") ?? undefined,
     link_url: String(form.get("link_url") ?? "").trim(),
+    coauthors: String(form.get("coauthors") ?? ""),
   });
   const errors: Record<string, string> = {};
   if (!parsed.success) for (const issue of parsed.error.issues) errors[String(issue.path[0] ?? "form")] ??= issue.message;
@@ -90,8 +177,8 @@ export async function publishPost(_prev: FormState, form: FormData): Promise<For
       if (mine.n >= WALL_MAX_POSTS) throw new UserError(`Tu as déjà ${WALL_MAX_POSTS} messages, le maximum.`);
       if (mine.recent) throw new UserError(`Attends ${WALL_POST_INTERVAL} minutes entre deux messages.`);
       const [post] = await tx<{ id: string }[]>`
-        insert into hnh.agora_post (author_person_id, category, body, link_url)
-        values (${person.id}, ${data.category}, ${data.body}, ${data.link_url || null}) returning id`;
+        insert into hnh.agora_post (author_person_id, category, body, link_url, coauthors)
+        values (${person.id}, ${data.category}, ${data.body}, ${data.link_url || null}, ${data.coauthors}) returning id`;
       await recordConsents(tx, person.id, [{ kind: "agora_display", granted: true }]);
       return post.id;
     });
@@ -128,7 +215,7 @@ export async function updatePost(postId: string, _prev: FormState, form: FormDat
       await tx`
         update hnh.agora_post
         set category = ${data.category}, body = ${data.body}, link_url = ${data.link_url || null},
-            status = 'pending', moderation_reason = null
+            coauthors = ${data.coauthors}, status = 'pending', moderation_reason = null
         where id = ${id.data}`;
     });
   } catch (e) {

@@ -63,7 +63,7 @@ export default async function InscriptionPage() {
               items={[
                 ["Inscriptions, médical", isPaused(w.reg_medical) ? "fermées pour le moment" : deadline(w.reg_medical.closes_at)],
                 ["Équipes médicales verrouillées", deadline(w.teams_medical.closes_at)],
-                ["Défi médical publié", "samedi 28 novembre à 10:00"],
+                ["Défi médical publié", "mercredi 25 novembre"],
                 ["Inscriptions, bioinformatique", isPaused(w.reg_bioinfo) ? "fermées pour le moment" : deadline(w.reg_bioinfo.closes_at)],
                 ["Événement à l'INSAT", "samedi 5 et dimanche 6 décembre"],
               ]}

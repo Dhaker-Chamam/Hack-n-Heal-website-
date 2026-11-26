@@ -354,6 +354,7 @@ function FreePeople({
                   <td className="py-2.5 pr-3 text-ink">
                     {p.person_status === "confirmed" ? "Confirmée" : "En attente de confirmation"}
                     <span className="block text-graphite">{p.seeking_team ? "Cherche une équipe" : "Sans équipe"}</span>
+                    {p.mixed_team_ok === false && <span className="block font-semibold">Refuse une équipe mixte</span>}
                   </td>
                   <td className="max-w-xs py-2.5 text-ink">{p.seeking_note ?? "—"}</td>
                 </tr>
@@ -505,6 +506,7 @@ function TeamPanel({ competition, team }: { competition: Competition; team: Buil
               <p className="text-small text-graphite">
                 {tagsOf(m)} · {m.institution}
                 {m.person_status === "pending" && " · email non confirmé"}
+                {m.mixed_team_ok === false && " · refuse une équipe mixte"}
               </p>
             </div>
             {!team.locked && (

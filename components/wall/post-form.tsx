@@ -3,7 +3,7 @@
 import { startTransition, useActionState, useState } from "react";
 import type { FormState } from "@/app/(public)/moi/actions";
 import { AGORA_CATEGORIES } from "@/lib/constants";
-import { WALL_BODY_MAX, WALL_BODY_MIN, textLength, wallWarnings } from "@/lib/wall";
+import { WALL_BODY_MAX, WALL_BODY_MIN, WALL_MAX_COAUTHORS, textLength, wallWarnings } from "@/lib/wall";
 import { Alert } from "../ui/alert";
 import { Button } from "../ui/button";
 import { FieldError, describedBy } from "../ui/field";
@@ -22,7 +22,7 @@ export function PostForm({
   idPrefix = "post",
 }: {
   action: Action;
-  defaults?: { category: string; body: string; link_url: string };
+  defaults?: { category: string; body: string; link_url: string; coauthors: string };
   consent?: boolean;
   submitLabel: string;
   idPrefix?: string;
@@ -30,6 +30,7 @@ export function PostForm({
   const [category, setCategory] = useState(defaults?.category ?? "");
   const [body, setBody] = useState(defaults?.body ?? "");
   const [link, setLink] = useState(defaults?.link_url ?? "");
+  const [coauthors, setCoauthors] = useState(defaults?.coauthors ?? "");
   const [agreed, setAgreed] = useState(false);
   const [state, formAction, pending] = useActionState(
     async (prev: FormState, form: FormData) => {
@@ -38,6 +39,7 @@ export function PostForm({
         setCategory("");
         setBody("");
         setLink("");
+        setCoauthors("");
         setAgreed(false);
       }
       return result;
@@ -131,6 +133,28 @@ export function PostForm({
           aria-describedby={describedBy(id("link_url"), true, err("link_url"))}
         />
         <FieldError id={`${id("link_url")}-error`} message={err("link_url")} />
+      </div>
+
+      <div>
+        <label htmlFor={id("coauthors")} className="block font-semibold text-ink">
+          Co-auteur·e·s <span className="ml-2 font-normal text-small text-graphite">facultatif</span>
+        </label>
+        <p id={`${id("coauthors")}-hint`} className="mt-0.5 text-small text-graphite">
+          Si vous avez écrit ce message à plusieurs : les noms, séparés par des virgules, {WALL_MAX_COAUTHORS} au maximum. Ils sont
+          affichés tels quels sous le message : demande leur accord avant.
+        </p>
+        <input
+          id={id("coauthors")}
+          name="coauthors"
+          placeholder="Sarra B., Youssef T."
+          maxLength={400}
+          value={coauthors}
+          onChange={(e) => setCoauthors(e.currentTarget.value)}
+          className="control mt-2"
+          aria-invalid={!!err("coauthors") || undefined}
+          aria-describedby={describedBy(id("coauthors"), true, err("coauthors"))}
+        />
+        <FieldError id={`${id("coauthors")}-error`} message={err("coauthors")} />
       </div>
 
       {consent && (

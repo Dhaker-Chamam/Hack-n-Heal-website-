@@ -31,6 +31,8 @@ export async function GET(_req: Request, ctx: { params: Promise<{ token: string 
       where id = ${person.id} and status = 'pending' returning id`;
     if (confirmed) {
       const parts = await myParticipations(person.id);
+      // an author of The Wall who takes part in no hackathon: no QR code, straight to the publishing page
+      if (Object.keys(parts).length === 0) redirect("/the-wall/publier");
       after(async () => {
         const teams = (Object.keys(parts) as Competition[]).map((c) => ({
           competition: c,

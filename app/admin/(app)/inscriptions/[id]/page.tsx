@@ -32,6 +32,7 @@ const CONSENT_LABEL: Record<string, string> = {
   internship: "Offres de stage",
   photo_opt_out: "Pas de photos",
   agora_display: "Affichage sur The Wall",
+  mixed_team: "Équipe mixte",
 };
 
 export default async function RegistrationDetail({
@@ -92,13 +93,14 @@ export default async function RegistrationDetail({
                 ["Email", p.email],
                 ["Téléphone", p.phone ?? "—"],
                 ["Établissement", p.institution],
-                ["Niveau", p.study_level],
+                ["Niveau", p.study_level ?? "—"],
                 ["Profil", `${specialities} (${PROFILE_KIND_LABEL[p.profile_kind]})`],
                 ["Compétences", p.skills.join(", ") || "—"],
                 ["Lien", p.link_url ?? "—"],
                 ["Facebook", facebook],
                 ["Inscription", formatShort(p.created_at)],
                 ["Confirmation", p.email_confirmed_at ? formatShort(p.email_confirmed_at) : "—"],
+                ["Équipe mixte", p.mixed_team_ok === null ? "Pas de réponse" : p.mixed_team_ok ? "Accepte" : "Refuse"],
                 ["Photos", p.photo_opt_out ? "Ne pas photographier" : "Accepte"],
                 ["Offres de stage", p.internship_offers_opt_in ? "Oui" : "Non"],
                 ["CV", p.cv_path ? (p.cv_share_opt_in ? "Oui, transmission autorisée" : "Oui, non transmis") : "Non"],

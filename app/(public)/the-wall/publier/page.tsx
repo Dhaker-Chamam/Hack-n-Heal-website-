@@ -5,13 +5,14 @@ import { SimpleActionForm } from "@/components/forms/simple-action-form";
 import { Alert } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/field";
 import { PostForm } from "@/components/wall/post-form";
+import { WallJoinForm } from "@/components/wall/wall-join-form";
 import { AGORA_CATEGORIES } from "@/lib/constants";
 import { currentPerson } from "@/lib/session";
 import { formatDeadline, formatShort } from "@/lib/time";
 import { POST_STATUS_LABEL, WALL_MAX_POSTS, WALL_POST_INTERVAL } from "@/lib/wall";
 import { myWallPosts } from "@/lib/wall-queries";
 import { closedSince, getWindow, notYetOpen } from "@/lib/windows";
-import { deleteMyPost, publishPost, updatePost } from "../actions";
+import { deleteMyPost, joinWall, publishPost, updatePost } from "../actions";
 
 export const metadata: Metadata = { title: "Publier sur The Wall" };
 
@@ -28,19 +29,25 @@ export default async function PublishPage() {
       <h1 className="t-headline mt-6">Publier sur The Wall</h1>
 
       {!person || person.status === "rejected" ? (
-        <div className="mt-6 grid gap-4">
+        <div className="mt-6 grid gap-8">
           <p className="max-w-measure text-ink">
-            Seuls les participants inscrits publient sur The Wall. Ouvre d&apos;abord ton espace avec le lien personnel reçu par
-            email, puis reviens sur cette page.
+            The Wall est ouvert à tout le monde : pas besoin d&apos;être inscrit·e à un hackathon. Donne ton nom et ton email, confirme
+            ton adresse avec le lien reçu, puis écris ton message.
           </p>
-          <p>
+          {posting.is_open ? (
+            <WallJoinForm action={joinWall} />
+          ) : (
+            <Alert
+              tone="info"
+              title={notYetOpen(posting) ? "Les publications ne sont pas encore ouvertes." : `Les publications sont closes${closedSince(posting)}.`}
+            />
+          )}
+          <p className="border-t border-jade/15 pt-6 text-graphite">
+            Déjà inscrit·e à Hack&apos;n&apos;Heal, ou déjà auteur·e sur The Wall ? Ouvre le lien personnel reçu par email, ou{" "}
             <Link href="/lien" className="font-semibold text-emerald underline">
-              Recevoir mon lien personnel
+              demande un nouveau lien
             </Link>
-            <span className="text-graphite"> · </span>
-            <Link href="/inscription" className="font-semibold text-emerald underline">
-              S&apos;inscrire
-            </Link>
+            , puis reviens sur cette page.
           </p>
         </div>
       ) : person.status !== "confirmed" ? (
@@ -64,7 +71,8 @@ export default async function PublishPage() {
               publicité, harcèlement.
             </li>
             <li>
-              Ton message est affiché avec ton prénom, l&apos;initiale de ton nom et ton établissement.{" "}
+              Ton message est affiché avec ton prénom, l&apos;initiale de ton nom et ton établissement, et le nom des co-auteur·e·s
+              que tu indiques.{" "}
               <Link href="/reglement#the-wall" className="font-semibold text-emerald underline">
                 Règlement de The Wall
               </Link>
@@ -131,6 +139,7 @@ export default async function PublishPage() {
                       )}
                       <p className="mt-3 whitespace-pre-line break-words text-ink">{post.body}</p>
                       {post.link_url && <p className="mt-2 break-all text-small text-graphite">{post.link_url}</p>}
+                      {post.coauthors.length > 0 && <p className="mt-2 text-small text-graphite">Avec {post.coauthors.join(", ")}</p>}
                       {post.status === "published" && (
                         <p className="mt-3 text-small">
                           <span className="tabular font-semibold text-ink">{post.counted_likes}</span>{" "}
@@ -149,7 +158,7 @@ export default async function PublishPage() {
                             <div className="mt-4">
                               <PostForm
                                 action={updatePost.bind(null, post.id)}
-                                defaults={{ category: post.category, body: post.body, link_url: post.link_url ?? "" }}
+                                defaults={{ category: post.category, body: post.body, link_url: post.link_url ?? "", coauthors: post.coauthors.join(", ") }}
                                 submitLabel="Renvoyer à la relecture"
                                 idPrefix={`edit_${post.id}`}
                               />

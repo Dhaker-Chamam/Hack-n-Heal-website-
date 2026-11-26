@@ -65,6 +65,10 @@ function toState(e: unknown): FormState {
 export async function joinCompetition(competition: string, _prev: FormState, form: FormData): Promise<FormState> {
   const c = asCompetition(competition);
   const person = await requirePerson();
+  // an author of The Wall has no hackathon profile yet, and teams are balanced on specialities
+  if (person.specialities.length === 0) {
+    return { ok: false, errors: {}, message: "Complète d'abord ton profil dans ton espace (téléphone, niveau d'études, spécialités), puis reviens ici." };
+  }
   const { choice, errors } = parseChoice(form, c);
   let kaggle: string | null = null;
   let laptop: boolean | null = null;

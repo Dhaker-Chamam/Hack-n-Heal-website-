@@ -5,9 +5,21 @@ import {
   authorLabel,
   likeStatus,
   linkDomain,
+  parseCoauthors,
   textLength,
   wallWarnings,
 } from "../../lib/wall";
+
+describe("parseCoauthors", () => {
+  it("splits on commas, semicolons and line breaks, and tidies the spaces", () => {
+    expect(parseCoauthors("Sarra B.,  Youssef   Trabelsi ;Inès\nOmar K.")).toEqual(["Sarra B.", "Youssef Trabelsi", "Inès", "Omar K."]);
+  });
+
+  it("gives no co-author for an empty field or stray separators", () => {
+    expect(parseCoauthors("")).toEqual([]);
+    expect(parseCoauthors(" , ;\n ")).toEqual([]);
+  });
+});
 
 describe("authorLabel", () => {
   it("shows the first name, the initial of the last name and the school", () => {

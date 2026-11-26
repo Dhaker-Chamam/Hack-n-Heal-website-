@@ -98,15 +98,19 @@ export async function updatePreferences(_prev: FormState, form: FormData): Promi
     photo_opt_out: form.get("photo_opt_out") === "on",
     cv_share: form.get("cv_share") === "on" && !!person.cv_path,
   };
+  // no radio chosen (or the question not shown): the answer stays what it was, "never asked" included
+  const answer = form.get("mixed_team");
+  const mixed = answer === "oui" ? true : answer === "non" ? false : person.mixed_team_ok;
   const changes: { kind: ConsentKind; granted: boolean }[] = [];
   if (next.internship !== person.internship_offers_opt_in) changes.push({ kind: "internship", granted: next.internship });
   if (next.photo_opt_out !== person.photo_opt_out) changes.push({ kind: "photo_opt_out", granted: next.photo_opt_out });
   if (next.cv_share !== person.cv_share_opt_in) changes.push({ kind: "cv_share", granted: next.cv_share });
+  if (mixed !== null && mixed !== person.mixed_team_ok) changes.push({ kind: "mixed_team", granted: mixed });
   if (changes.length) {
     await db().begin(async (tx) => {
       await tx`
         update hnh.person set internship_offers_opt_in = ${next.internship}, photo_opt_out = ${next.photo_opt_out},
-          cv_share_opt_in = ${next.cv_share}, updated_at = now()
+          cv_share_opt_in = ${next.cv_share}, mixed_team_ok = ${mixed}, updated_at = now()
         where id = ${person.id}`;
       await recordConsents(tx, person.id, changes);
     });

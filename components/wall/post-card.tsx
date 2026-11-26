@@ -27,6 +27,7 @@ export function PostCard({ post, voteOpen, rank, full = false }: { post: WallPos
       <div className="mt-4 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-t border-jade/15 pt-3">
         <p className="text-small text-graphite">
           <span className="font-semibold text-ink">{authorLabel(post.first_name, post.last_name, post.institution)}</span>
+          {post.coauthors.length > 0 && <span> · avec {post.coauthors.join(", ")}</span>}
           <span className="tabular"> · {formatShort(post.published_at)}</span>
         </p>
         <div className="flex flex-wrap items-center gap-x-5 gap-y-2">

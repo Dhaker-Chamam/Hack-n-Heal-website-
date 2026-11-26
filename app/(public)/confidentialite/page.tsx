@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: "Données personnelles" };
 export default function PrivacyPage() {
   const contact = env.controllerContact ?? "symbioinsat@gmail.com";
   return (
-    <Prose title="Données personnelles" updated="25 novembre 2026">
+    <Prose title="Données personnelles" updated="26 novembre 2026">
       <Section id="responsable" title="Qui traite tes données">
         <p>
           Le responsable du traitement est <strong>{env.controllerName}</strong>, club étudiant de l&apos;INSAT, qui organise
@@ -33,8 +33,8 @@ export default function PrivacyPage() {
             ton badge et ton certificat.
           </li>
           <li>
-            <strong>Parcours</strong> (établissement, niveau, profil, compétences, lien LinkedIn ou GitHub) : former des équipes
-            équilibrées entre santé et tech.
+            <strong>Parcours</strong> (établissement, niveau, profil, compétences, lien LinkedIn ou GitHub, et ta réponse à la
+            question sur l&apos;équipe mixte) : former des équipes équilibrées entre santé et tech.
           </li>
           <li>
             <strong>Participation</strong> (équipe, nom d&apos;utilisateur Kaggle, projet déposé, notes du jury, passage à
@@ -46,7 +46,9 @@ export default function PrivacyPage() {
           </li>
           <li>
             <strong>The Wall et mini-jeux</strong> : tes publications, avec ton prénom, l&apos;initiale de ton nom et ton
-            établissement ; tes scores si tu saisis ton code participant.
+            établissement, et le nom des co-auteur·e·s que tu indiques avec leur accord ; tes scores si tu saisis ton code
+            participant. Si tu publies sur The Wall sans participer à un hackathon, nous ne te demandons que ton prénom, ton nom,
+            ton email et ton établissement.
           </li>
           <li>
             <strong>Données techniques</strong> : adresse IP et empreinte de navigateur, uniquement sous forme chiffrée

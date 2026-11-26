@@ -12,7 +12,7 @@ const COMPETITIONS = [
   {
     name: "Le hackathon médical",
     text: "Une semaine pour répondre à un vrai défi de santé, en équipe mixte, puis présenter son projet devant le jury à l'INSAT.",
-    facts: "1 semaine · Équipes de 4 à 7 · Pitch le dimanche 6 décembre",
+    facts: "1 semaine · Équipes de 4 à 7 · Pitch le samedi 5 décembre",
     href: "/defi",
     cta: "Voir le défi médical",
     tone: "bg-emerald text-paper",

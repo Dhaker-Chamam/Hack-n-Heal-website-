@@ -13,6 +13,7 @@ export type WallPost = {
   category: WallCategory;
   body: string;
   link_url: string | null;
+  coauthors: string[];
   counted_likes: number;
   published_at: Date;
   first_name: string;
@@ -35,7 +36,7 @@ export async function listWallPosts(sort: WallSort, page: number, voter: string 
       ? sql`p.counted_likes desc, p.last_counted_like_at asc nulls last, p.published_at asc`
       : sql`p.published_at desc`;
   return sql<WallPost[]>`
-    select p.id, p.category, p.body, p.link_url, p.counted_likes, p.published_at,
+    select p.id, p.category, p.body, p.link_url, p.coauthors, p.counted_likes, p.published_at,
            a.first_name, a.last_name, a.institution, (l.id is not null) as liked
     from hnh.agora_post p
     join hnh.person a on a.id = p.author_person_id
@@ -47,7 +48,7 @@ export async function listWallPosts(sort: WallSort, page: number, voter: string 
 
 export async function getWallPost(id: string, voter: string | null): Promise<WallPost | null> {
   const [post] = await db()<WallPost[]>`
-    select p.id, p.category, p.body, p.link_url, p.counted_likes, p.published_at,
+    select p.id, p.category, p.body, p.link_url, p.coauthors, p.counted_likes, p.published_at,
            a.first_name, a.last_name, a.institution, (l.id is not null) as liked
     from hnh.agora_post p
     join hnh.person a on a.id = p.author_person_id
@@ -61,6 +62,7 @@ export type MyWallPost = {
   category: WallCategory;
   body: string;
   link_url: string | null;
+  coauthors: string[];
   status: PostStatus;
   moderation_reason: string | null;
   counted_likes: number;
@@ -69,7 +71,7 @@ export type MyWallPost = {
 
 export async function myWallPosts(personId: string): Promise<MyWallPost[]> {
   return db()<MyWallPost[]>`
-    select id, category, body, link_url, status, moderation_reason, counted_likes, created_at
+    select id, category, body, link_url, coauthors, status, moderation_reason, counted_likes, created_at
     from hnh.agora_post where author_person_id = ${personId} order by created_at desc`;
 }
 
@@ -100,6 +102,7 @@ export type ModerationPost = {
   category: WallCategory;
   body: string;
   link_url: string | null;
+  coauthors: string[];
   status: PostStatus;
   moderation_reason: string | null;
   counted_likes: number;
@@ -127,7 +130,7 @@ export async function moderationPosts(view: ModerationView): Promise<ModerationP
   // the queue is read oldest first, the other lists newest first
   const order = view === "attente" ? sql`p.created_at asc` : sql`p.created_at desc`;
   return sql<ModerationPost[]>`
-    select p.id, p.category, p.body, p.link_url, p.status, p.moderation_reason, p.counted_likes, p.report_count,
+    select p.id, p.category, p.body, p.link_url, p.coauthors, p.status, p.moderation_reason, p.counted_likes, p.report_count,
            p.created_at, p.published_at, p.author_person_id,
            a.first_name, a.last_name, a.email, a.institution, a.agora_blocked,
            coalesce((select json_agg(json_build_object('reason', r.reason, 'details', r.details) order by r.created_at)

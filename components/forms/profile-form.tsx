@@ -65,6 +65,7 @@ export function ProfileForm({
         </Field>
         <Field id="study_level" label="Niveau d'études" error={err("study_level")}>
           <select id="study_level" name="study_level" defaultValue={defaults.study_level} className="control">
+            {!defaults.study_level && <option value="">Choisir…</option>}
             {levels.map((l) => (
               <option key={l}>{l}</option>
             ))}

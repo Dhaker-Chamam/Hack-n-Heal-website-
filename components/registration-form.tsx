@@ -30,7 +30,7 @@ const STEPS = ["Compétition", "Profil", "Équipe", "Finaliser"] as const;
 const STEP_FIELDS: string[][] = [
   ["competitions"],
   ["first_name", "last_name", "email", "phone", "institution", "institution_other", "study_level", "specialities", "skills", "link_url", "facebook"],
-  ["medical_mode", "medical_team_name", "medical_code", "medical_note", "bioinfo_mode", "bioinfo_team_name", "bioinfo_code", "bioinfo_note", "kaggle_username", "has_laptop"],
+  ["medical_mode", "medical_team_name", "medical_code", "medical_note", "bioinfo_mode", "bioinfo_team_name", "bioinfo_code", "bioinfo_note", "kaggle_username", "has_laptop", "mixed_team"],
   ["cv", "cv_share", "internship", "photo_opt_out", "adult", "privacy"],
 ];
 
@@ -42,7 +42,7 @@ const COMP_COPY: Record<Comp, { rhythm: string; name: string; size: string; line
     rhythm: "1 semaine",
     name: "Hackathon médical",
     size: "Équipes de 4 à 7",
-    lines: ["Défi publié le samedi 28 novembre", "Travail à distance, mentorat possible", "Pitch devant le jury le dimanche 6 décembre"],
+    lines: ["Défi publié le mercredi 25 novembre", "Travail à distance, mentorat possible", "Pitch devant le jury le samedi 5 décembre"],
   },
   bioinfo: {
     rhythm: "12 heures",
@@ -148,6 +148,7 @@ export function RegistrationForm(props: RegistrationFormProps) {
     }
 
     if (i === 2) {
+      if (!val("mixed_team")) errs.mixed_team = "Réponds à cette question.";
       for (const c of fd.getAll("competitions").map(String) as Comp[]) {
         const mode = val(`${c}_mode`);
         if (!mode) errs[`${c}_mode`] = "Choisis une option.";
@@ -476,7 +477,7 @@ export function RegistrationForm(props: RegistrationFormProps) {
                 {[
                   { v: "create", t: "Créer une équipe", d: "Tu reçois un code à partager avec tes coéquipiers." },
                   { v: "join", t: "Rejoindre une équipe", d: "Avec le code donné par ton chef d'équipe." },
-                  { v: "seek", t: "Je cherche une équipe", d: c === "medical" ? "Les organisateurs te placent avant le 27 novembre." : "Les organisateurs te placent avant le 2 décembre." },
+                  { v: "seek", t: "Je cherche une équipe", d: c === "medical" ? "Les organisateurs te placent à la clôture des inscriptions." : "Les organisateurs te placent avant le 2 décembre." },
                 ].map((o) => (
                   <label key={o.v}
                     className="cursor-pointer border border-graphite bg-white p-4 transition-colors duration-150 hover:border-jade has-checked:border-jade has-checked:bg-mist has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-emerald">
@@ -526,6 +527,26 @@ export function RegistrationForm(props: RegistrationFormProps) {
             </section>
           );
         })}
+        <section aria-labelledby="mixed-team-title" className="border-t border-jade/15 pt-8">
+          <h3 id="mixed-team-title" className="t-subhead">
+            Acceptes-tu de faire partie d&apos;une équipe mixte ?
+          </h3>
+          <p id="mixed_team-hint" className="mt-1 max-w-measure text-small text-graphite">
+            Une équipe mixte réunit des profils santé et tech : médecine, pharmacie, biologie, informatique, IA et data… Les organisateurs tiennent compte de ta réponse quand ils composent ou
+            complètent les équipes.
+          </p>
+          <div role="radiogroup" aria-labelledby="mixed-team-title" aria-describedby={describedBy("mixed_team", true, err("mixed_team"))}
+            className="mt-4 flex flex-wrap gap-3">
+            {[["oui", "Oui"], ["non", "Non"]].map(([v, t]) => (
+              <label key={v}
+                className="flex min-w-28 cursor-pointer items-center gap-2.5 border border-graphite bg-white px-4 py-3 transition-colors duration-150 hover:border-jade has-checked:border-jade has-checked:bg-mist has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-emerald">
+                <input type="radio" name="mixed_team" value={v} className="size-4" />
+                <span className="font-semibold text-ink">{t}</span>
+              </label>
+            ))}
+          </div>
+          <FieldError id="mixed_team-error" message={err("mixed_team")} />
+        </section>
       </fieldset>
 
       {/* Step 4 — CV and consents */}

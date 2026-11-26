@@ -200,7 +200,7 @@ const FAQS: [string, ReactNode][] = [
   ],
   [
     "Où et quand ?",
-    "À l'INSAT, Centre Urbain Nord, Tunis, le samedi 5 et le dimanche 6 décembre 2026. Le hackathon médical commence à distance dès la publication du défi, le samedi 28 novembre.",
+    "À l'INSAT, Centre Urbain Nord, Tunis, le samedi 5 et le dimanche 6 décembre 2026. Le hackathon médical commence à distance dès la publication du défi, le mercredi 25 novembre.",
   ],
   ["Peut-on participer aux deux compétitions ?", "Oui, avec une équipe différente dans chacune."],
   [
@@ -218,13 +218,13 @@ const FAQS: [string, ReactNode][] = [
       <a href="/inscription" className={link}>
         page d&apos;inscription
       </a>
-      , en quelques minutes. Hackathon médical : jusqu&apos;au jeudi 26 novembre à 23:59. Pour le hackathon bioinformatique, la page
+      , en quelques minutes. Hackathon médical : jusqu&apos;au vendredi 27 novembre à 22:00. Pour le hackathon bioinformatique, la page
       d&apos;inscription indique si les inscriptions sont ouvertes.
     </>,
   ],
   [
     "Comment se passe le rendu du hackathon médical ?",
-    "Avant le jeudi 3 décembre à 23:59, chaque équipe dépose depuis son espace un titre, un résumé et le lien d'une vidéo de 5 minutes maximum. Le dimanche 6 décembre, elle présente son projet devant le jury à l'INSAT.",
+    "Avant le jeudi 3 décembre à 23:59, chaque équipe dépose depuis son espace un titre, un résumé et le lien d'une vidéo de 5 minutes maximum. Le samedi 5 décembre, elle présente son projet devant le jury à l'INSAT.",
   ],
   ["Les ateliers sont-ils en ligne ou en présentiel ?", "Le format sera annoncé par les organisateurs."],
 ];

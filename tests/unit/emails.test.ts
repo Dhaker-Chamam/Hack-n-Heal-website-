@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TEMPLATE_LABEL, teamPlacedEmail, wallChangesEmail, wallPublishedEmail, wallWinnerEmail } from "../../lib/emails";
+import { TEMPLATE_LABEL, teamPlacedEmail, wallChangesEmail, wallConfirmEmail, wallPublishedEmail, wallWinnerEmail } from "../../lib/emails";
 
 describe("teamPlacedEmail", () => {
   it("names the team, its code and the competition, and links to the team page", () => {
@@ -50,6 +50,13 @@ describe("The Wall emails", () => {
     const mail = wallWinnerEmail("Bilel", "6a1301b9-831f-424c-a05a-e9763c179ea3");
     expect(mail.text).toContain("3 minutes sur scène le dimanche 6 décembre");
     expect(mail.text).toContain("avant le samedi 5 décembre à 12:00");
+  });
+
+  it("asks an author who takes part in no hackathon to confirm, without mentioning a registration or a QR code", () => {
+    const mail = wallConfirmEmail("Nour", "tok_0123456789");
+    expect(mail.subject).toBe("Confirme ton adresse pour publier sur The Wall");
+    expect(mail.text).toMatch(/Confirmer et publier : https?:\/\/\S+\/acces\/tok_0123456789/);
+    expect(mail.text).not.toMatch(/QR|inscrit/i);
   });
 
   it("has outbox labels", () => {

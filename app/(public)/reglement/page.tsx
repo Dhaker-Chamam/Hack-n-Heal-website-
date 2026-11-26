@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: "Règlement" };
 
 export default function RulesPage() {
   return (
-    <Prose title="Règlement de Hack'n'Heal 2026" updated="25 novembre 2026">
+    <Prose title="Règlement de Hack'n'Heal 2026" updated="26 novembre 2026">
       <Section id="general" title="Participation">
         <ul>
           <li>Hack&apos;n&apos;Heal 2026 a lieu les samedi 5 et dimanche 6 décembre 2026 à l&apos;INSAT, Centre Urbain Nord, Tunis.</li>
@@ -25,21 +25,28 @@ export default function RulesPage() {
             IA et data). Une personne en bioinformatique, ou dont les spécialités relèvent des deux côtés, compte pour l&apos;un ou
             l&apos;autre, mais pas pour les deux à elle seule.
           </li>
-          <li>Les équipes médicales sont verrouillées le vendredi 27 novembre à 23:59, les équipes bioinformatiques le mercredi 2 décembre à 23:59.</li>
+          <li>
+            À l&apos;inscription, chaque participant·e indique s&apos;il ou elle accepte de faire partie d&apos;une équipe mixte. Les
+            organisateurs en tiennent compte quand ils composent ou complètent les équipes.
+          </li>
+          <li>
+            Les inscriptions au hackathon médical ferment le vendredi 27 novembre à 22:00. Les équipes médicales sont verrouillées le
+            vendredi 27 novembre à 23:59, les équipes bioinformatiques le mercredi 2 décembre à 23:59.
+          </li>
           <li>À la clôture, les organisateurs peuvent compléter, fusionner ou recomposer les équipes incomplètes et y placer les participant·e·s sans équipe.</li>
         </ul>
       </Section>
 
       <Section id="medical" title="Hackathon médical">
         <ul>
-          <li>Le défi est publié le samedi 28 novembre à 10:00 sur la page Défi médical, avec ses ressources.</li>
+          <li>Le défi est publié le mercredi 25 novembre, avec ses ressources.</li>
           <li>
             Chaque équipe dépose son projet depuis l&apos;espace d&apos;un de ses membres avant le <strong>jeudi 3 décembre à 23:59</strong> :
             titre, résumé, axe, sources de données et une <strong>vidéo de 5 minutes maximum</strong> (lien YouTube non répertorié,
             Google Drive ou Vimeo). L&apos;heure du serveur fait foi.
           </li>
           <li>Une équipe sans dépôt ne présente pas son pitch.</li>
-          <li>Le dimanche 6 décembre, chaque équipe présente son projet devant le jury à l&apos;INSAT : 5 minutes de pitch puis 3 minutes de questions, sauf annonce contraire.</li>
+          <li>Le samedi 5 décembre, chaque équipe présente son projet devant le jury à l&apos;INSAT : 5 minutes de pitch puis 3 minutes de questions, sauf annonce contraire.</li>
           <li>
             Grille du jury : pertinence médicale (25 %), qualité du prototype (25 %), innovation (20 %), données et éthique (15 %),
             pitch et vidéo (15 %). En cas d&apos;égalité, la pertinence médicale départage, puis la délibération du jury.
@@ -66,9 +73,13 @@ export default function RulesPage() {
       <Section id="the-wall" title="The Wall">
         <ul>
           <li>
-            The Wall est l&apos;espace de publication en ligne de l&apos;événement. Chaque participant·e confirmé·e peut y publier
-            jusqu&apos;à 3 messages (projet, idée ou réflexion, 800 caractères, un lien facultatif, pas d&apos;image) jusqu&apos;au
-            mercredi 2 décembre à 23:59.
+            The Wall est l&apos;espace de publication en ligne de l&apos;événement. Il est ouvert à toute personne de 18 ans ou plus,
+            inscrite ou non à un hackathon, qui confirme son adresse email. Chaque auteur·e peut y publier jusqu&apos;à 3 messages
+            (projet, idée ou réflexion, 800 caractères, un lien facultatif, pas d&apos;image) jusqu&apos;au mercredi 2 décembre à 23:59.
+          </li>
+          <li>
+            Un message peut citer jusqu&apos;à 4 co-auteur·e·s, avec leur accord. La personne qui le publie reste l&apos;interlocutrice
+            des organisateurs.
           </li>
           <li>Chaque message est relu par un modérateur avant publication. Sont refusés : données de patients, affirmations médicales sans source, promesses de guérison, publicité, harcèlement.</li>
           <li>

@@ -115,6 +115,19 @@ export function confirmEmail(firstName: string, token: string, competitions: Com
   };
 }
 
+/** For someone who signs up to publish on The Wall without registering to a hackathon. */
+export function wallConfirmEmail(firstName: string, token: string) {
+  return {
+    subject: "Confirme ton adresse pour publier sur The Wall",
+    ...layout(`${firstName}, confirme ton adresse`, [
+      p("Tu veux publier sur The Wall de Hack'n'Heal 2026. Clique sur le bouton pour confirmer ton adresse email : tu pourras écrire ton message juste après."),
+      button("Confirmer et publier", link.access(token)),
+      p("Garde cet email : ce lien te sert aussi à retrouver, corriger ou supprimer tes messages. Ne le partage pas, il remplace un mot de passe."),
+      p("Sans confirmation sous 72 heures, ta demande est supprimée automatiquement."),
+    ]),
+  };
+}
+
 export function welcomeEmail(
   firstName: string,
   token: string,

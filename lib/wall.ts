@@ -5,6 +5,9 @@ export const WALL_BODY_MIN = 20;
 export const WALL_BODY_MAX = 800;
 /** Minutes an author waits between two new posts. */
 export const WALL_POST_INTERVAL = 10;
+/** Co-authors an author may name on a post, and the longest name accepted. */
+export const WALL_MAX_COAUTHORS = 4;
+export const WALL_COAUTHOR_MAX = 60;
 /** Open reports that hide a published post until a moderator reviews it. */
 export const WALL_REPORTS_TO_HIDE = 3;
 
@@ -39,6 +42,14 @@ export const textLength = (s: string): number => Array.from(s).length;
 export function authorLabel(firstName: string, lastName: string, institution: string): string {
   const initial = Array.from(lastName.trim())[0];
   return `${firstName.trim()}${initial ? ` ${initial.toUpperCase()}.` : ""} · ${institution}`;
+}
+
+/** The co-authors typed in one field, separated by commas, semicolons or line breaks. */
+export function parseCoauthors(input: string): string[] {
+  return input
+    .split(/[,;\n]/)
+    .map((name) => name.replace(/\s+/g, " ").trim())
+    .filter(Boolean);
 }
 
 /** The link of a post is shown as its domain only. */
